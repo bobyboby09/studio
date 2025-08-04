@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -40,16 +41,16 @@ export default function MyBookingsPage() {
     if (date instanceof Date) {
       return format(date, "PPP");
     }
-    return "Invalid Date";
+    return "अमान्य तारीख";
   }
 
 
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="font-headline text-5xl font-bold">My Bookings</h1>
+        <h1 className="font-headline text-5xl font-bold">मेरी बुकिंग</h1>
         <p className="text-lg text-muted-foreground mt-2">
-          Track the status of your studio sessions.
+          अपने स्टूडियो सत्रों की स्थिति को ट्रैक करें।
         </p>
       </div>
       <Card>
@@ -57,9 +58,9 @@ export default function MyBookingsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Status</TableHead>
+                <TableHead>सेवा</TableHead>
+                <TableHead>तारीख</TableHead>
+                <TableHead className="text-right">स्थिति</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

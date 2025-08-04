@@ -30,13 +30,13 @@ import { onServicesUpdate, Service } from "@/services/services"
 
 const bookingFormSchema = z.object({
   service: z.string({
-    required_error: "Please select a service.",
+    required_error: "कृपया एक सेवा चुनें।",
   }),
   date: z.date({
-    required_error: "A date for your booking is required.",
+    required_error: "आपकी बुकिंग के लिए एक तारीख आवश्यक है।",
   }),
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  phone: z.string().min(10, "Please enter a valid phone number."),
+  name: z.string().min(2, "नाम कम से कम 2 अक्षरों का होना चाहिए।"),
+  phone: z.string().min(10, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।"),
   notes: z.string().optional(),
   promoCode: z.string().optional(),
 })
@@ -64,15 +64,15 @@ export default function BookingPage() {
         try {
             await addBooking(data);
             toast({
-                title: "Booking Submitted!",
-                description: "We have received your request and will contact you shortly to confirm.",
+                title: "बुकिंग सबमिट हो गई!",
+                description: "हमें आपका अनुरोध मिल गया है और पुष्टि के लिए हम जल्द ही आपसे संपर्क करेंगे।",
             })
             form.reset();
         } catch (error) {
-            console.error("Error adding booking: ", error);
+            console.error("बुकिंग जोड़ने में त्रुटि: ", error);
             toast({
-                title: "Error",
-                description: "There was a problem submitting your booking. Please try again later.",
+                title: "त्रुटि",
+                description: "आपकी बुकिंग सबमिट करने में कोई समस्या हुई। कृपया बाद में पुनः प्रयास करें।",
                 variant: "destructive"
             })
         }
@@ -82,8 +82,8 @@ export default function BookingPage() {
     <div className="container mx-auto px-4 py-16">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="font-headline text-4xl">Book a Session</CardTitle>
-          <CardDescription>Fill out the form below to request a booking. We'll get back to you within 24 hours.</CardDescription>
+          <CardTitle className="font-headline text-4xl">एक सेशन बुक करें</CardTitle>
+          <CardDescription>बुकिंग का अनुरोध करने के लिए नीचे दिया गया फ़ॉर्म भरें। हम 24 घंटे के भीतर आपसे संपर्क करेंगे।</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -93,11 +93,11 @@ export default function BookingPage() {
                 name="service"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Service</FormLabel>
+                    <FormLabel>सेवा</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a service to book" />
+                          <SelectValue placeholder="बुक करने के लिए एक सेवा चुनें" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -115,7 +115,7 @@ export default function BookingPage() {
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>तारीख</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -129,7 +129,7 @@ export default function BookingPage() {
                             {field.value ? (
                               format(field.value, "PPP")
                             ) : (
-                              <span>Pick a date</span>
+                              <span>एक तारीख चुनें</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -156,9 +156,9 @@ export default function BookingPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>पूरा नाम</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="जैसे - राहुल कुमार" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,7 +169,7 @@ export default function BookingPage() {
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>फोन नंबर</FormLabel>
                     <FormControl>
                       <Input placeholder="(123) 456-7890" {...field} />
                     </FormControl>
@@ -182,16 +182,16 @@ export default function BookingPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes (Optional)</FormLabel>
+                    <FormLabel>नोट्स (वैकल्पिक)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Tell us a little bit about your project"
+                        placeholder="हमें अपने प्रोजेक्ट के बारे में थोड़ा बताएं"
                         className="resize-none"
                         {...field}
                       />
                     </FormControl>
                      <FormDescription>
-                      Any details like number of songs, genre, or specific requirements.
+                      कोई भी विवरण जैसे गानों की संख्या, शैली, या विशिष्ट आवश्यकताएं।
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -202,15 +202,15 @@ export default function BookingPage() {
                 name="promoCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Promo Code (Optional)</FormLabel>
+                    <FormLabel>प्रोमो कोड (वैकल्पिक)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter promo code" {...field} />
+                      <Input placeholder="प्रोमो कोड दर्ज करें" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" size="lg">Submit Booking Request</Button>
+              <Button type="submit" className="w-full" size="lg">बुकिंग अनुरोध सबमिट करें</Button>
             </form>
           </Form>
         </CardContent>

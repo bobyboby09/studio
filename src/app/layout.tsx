@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/toaster"
 
 
 export const metadata: Metadata = {
-  title: 'Studio Maestro',
-  description: 'High-end recording and production studio.',
+  title: 'प्रदीप फिल्म्स स्टूडियो',
+  description: 'उच्च गुणवत्ता वाली रिकॉर्डिंग और प्रोडक्शन स्टूडियो।',
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="hi" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

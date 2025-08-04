@@ -16,8 +16,8 @@ export default function GalleryPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="font-headline text-5xl font-bold">Gallery</h1>
-        <p className="text-lg text-muted-foreground mt-2">A glimpse into our creative space.</p>
+        <h1 className="font-headline text-5xl font-bold">गैलरी</h1>
+        <p className="text-lg text-muted-foreground mt-2">हमारे रचनात्मक स्थान की एक झलक।</p>
       </div>
       <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
         {galleryImages.map((image) => (

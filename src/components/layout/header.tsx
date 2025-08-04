@@ -10,11 +10,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/my-bookings", label: "My Bookings" },
-  { href: "/admin", label: "Admin" },
+  { href: "/", label: "होम" },
+  { href: "/services", label: "सेवाएं" },
+  { href: "/gallery", label: "गैलरी" },
+  { href: "/my-bookings", label: "मेरी बुकिंग" },
+  { href: "/admin", label: "एडमिन" },
 ];
 
 export function Header() {
@@ -27,7 +27,7 @@ export function Header() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block font-headline">
-              Pradeep film's studio
+              प्रदीप फिल्म्स स्टूडियो
             </span>
           </Link>
           <nav className="flex items-center gap-6 text-sm">
@@ -51,7 +51,7 @@ export function Header() {
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle Menu</span>
+                  <span className="sr-only">मेनू टॉगल करें</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="pr-0">
@@ -59,7 +59,7 @@ export function Header() {
                   <SheetTitle>
                      <Link href="/" className="flex items-center space-x-2">
                         <Logo className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline">Pradeep film's studio</span>
+                        <span className="font-bold font-headline">प्रदीप फिल्म्स स्टूडियो</span>
                       </Link>
                   </SheetTitle>
                 </SheetHeader>
@@ -82,10 +82,10 @@ export function Header() {
           </div>
           <Link href="/" className="flex items-center space-x-2 md:hidden">
             <Logo className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">Pradeep film's studio</span>
+            <span className="font-bold font-headline">प्रदीप फिल्म्स स्टूडियो</span>
           </Link>
           <Button asChild>
-            <Link href="/booking">Book Now</Link>
+            <Link href="/booking">अभी बुक करें</Link>
           </Button>
         </div>
       </div>

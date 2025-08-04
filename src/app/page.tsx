@@ -21,9 +21,9 @@ export default function Home() {
   }, []);
 
   const updates = [
-    { title: 'New Analog Compressor Added', description: 'The new "Golden Ears" compressor is now available for all mixing sessions.' },
-    { title: 'Studio B Acoustics Upgraded', description: 'We have revamped the acoustics in Studio B for an even cleaner sound.' },
-    { title: 'Collaboration with Aura Records', description: 'Exciting new projects coming soon with artists from Aura Records.' },
+    { title: 'नया एनालॉग कंप्रेसर जोड़ा गया', description: 'नया "गोल्डन इयर्स" कंप्रेसर अब सभी मिक्सिंग सत्रों के लिए उपलब्ध है।' },
+    { title: 'स्टूडियो बी की ध्वनिकी अपग्रेड की गई', description: 'हमने और भी स्पष्ट ध्वनि के लिए स्टूडियो बी में ध्वनिकी को नया रूप दिया है।' },
+    { title: 'ऑरा रिकॉर्ड्स के साथ सहयोग', description: 'ऑरा रिकॉर्ड्स के कलाकारों के साथ जल्द ही रोमांचक नए प्रोजेक्ट आ रहे हैं।' },
   ];
 
   return (
@@ -31,14 +31,14 @@ export default function Home() {
       <section className="py-20 md:py-32 bg-black text-center relative">
         <div className="container mx-auto px-4 z-10">
           <h1 className="font-headline text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-white mb-4">
-            Pradeep film's studio and mixing lab
+            प्रदीप फिल्म्स स्टूडियो और मिक्सिंग लैब
           </h1>
           <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Where your musical vision finds its perfect sound. Professional recording, mixing, and mastering services for artists who demand the best.
+            जहाँ आपकी संगीत दृष्टि को उसकी उत्तम ध्वनि मिलती है। सर्वश्रेष्ठ की मांग करने वाले कलाकारों के लिए पेशेवर रिकॉर्डिंग, मिक्सिंग और मास्टरिंग सेवाएँ।
           </p>
           <Button asChild size="lg">
             <Link href="/booking">
-              Book Your Session <ArrowRight className="ml-2" />
+              अपना सेशन बुक करें <ArrowRight className="ml-2" />
             </Link>
           </Button>
         </div>
@@ -46,15 +46,15 @@ export default function Home() {
       
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <h2 className="font-headline text-4xl font-bold text-center mb-12">Our World-Class Facilities</h2>
+          <h2 className="font-headline text-4xl font-bold text-center mb-12">हमारी विश्व स्तरीय सुविधाएँ</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-             <Image src="https://placehold.co/600x400.png" alt="Studio A" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="recording studio" />
-             <Image src="https://placehold.co/600x800.png" alt="Mixing Console" width={600} height={800} className="rounded-lg shadow-lg object-cover w-full h-full md:col-span-1" data-ai-hint="mixing console" />
-             <Image src="https://placehold.co/600x400.png" alt="Lounge Area" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="studio lounge" />
+             <Image src="https://placehold.co/600x400.png" alt="स्टूडियो ए" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="recording studio" />
+             <Image src="https://placehold.co/600x800.png" alt="मिक्सिंग कंसोल" width={600} height={800} className="rounded-lg shadow-lg object-cover w-full h-full md:col-span-1" data-ai-hint="mixing console" />
+             <Image src="https://placehold.co/600x400.png" alt="लाउंज क्षेत्र" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="studio lounge" />
           </div>
            <div className="text-center mt-12">
             <Button asChild variant="outline">
-              <Link href="/gallery">Explore Gallery <ArrowRight className="ml-2" /></Link>
+              <Link href="/gallery">गैलरी देखें <ArrowRight className="ml-2" /></Link>
             </Button>
           </div>
         </div>
@@ -65,8 +65,8 @@ export default function Home() {
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-4xl font-bold">Our Services</h2>
-            <p className="text-lg text-muted-foreground mt-2">Tailored solutions for every artist.</p>
+            <h2 className="font-headline text-4xl font-bold">हमारी सेवाएँ</h2>
+            <p className="text-lg text-muted-foreground mt-2">हर कलाकार के लिए विशेष समाधान।</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service) => (
@@ -80,7 +80,7 @@ export default function Home() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href="/booking">Book Now</Link>
+                    <Link href="/booking">अभी बुक करें</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -88,7 +88,7 @@ export default function Home() {
           </div>
           <div className="text-center mt-12">
             <Button asChild variant="outline">
-              <Link href="/services">View All Services <ArrowRight className="ml-2" /></Link>
+              <Link href="/services">सभी सेवाएँ देखें <ArrowRight className="ml-2" /></Link>
             </Button>
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="font-headline text-4xl font-bold mb-6">Latest Updates</h2>
+              <h2 className="font-headline text-4xl font-bold mb-6">नवीनतम अपडेट</h2>
               <div className="space-y-6">
                 {updates.map((update, index) => (
                   <div key={index} className="flex items-start gap-4">
@@ -120,18 +120,18 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="text-primary" />
-                    <span className="font-headline text-2xl">Special Promotion</span>
+                    <span className="font-headline text-2xl">विशेष प्रचार</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
                   <p className="text-lg text-muted-foreground mb-4">
-                    Get 15% off your first full-day booking!
+                    अपनी पहली पूरे दिन की बुकिंग पर 15% की छूट पाएं!
                   </p>
                   <p className="text-4xl font-bold font-mono tracking-widest text-primary bg-background/50 rounded-lg p-4 inline-block">
                     MAESTRO15
                   </p>
                   <p className="text-sm text-muted-foreground mt-4">
-                    Use this code at checkout.
+                    चेकआउट पर इस कोड का प्रयोग करें।
                   </p>
                 </CardContent>
               </Card>

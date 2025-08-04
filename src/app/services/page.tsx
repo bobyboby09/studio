@@ -20,8 +20,8 @@ export default function ServicesPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="font-headline text-5xl font-bold">Our Services</h1>
-        <p className="text-lg text-muted-foreground mt-2">Tailored solutions for every artist.</p>
+        <h1 className="font-headline text-5xl font-bold">हमारी सेवाएँ</h1>
+        <p className="text-lg text-muted-foreground mt-2">हर कलाकार के लिए विशेष समाधान।</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {services.map((service) => (
@@ -35,7 +35,7 @@ export default function ServicesPage() {
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full">
-                <Link href="/booking">Book Now</Link>
+                <Link href="/booking">अभी बुक करें</Link>
               </Button>
             </CardFooter>
           </Card>
