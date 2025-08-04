@@ -12,7 +12,9 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onServicesUpdate(setServices);
+    const unsubscribe = onServicesUpdate((allServices) => {
+      setServices(allServices.reverse());
+    });
     return () => unsubscribe();
   }, []);
 
