@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@/services/bookings";
 import { Service, onServicesUpdate, addService, deleteService, updateService } from "@/services/services";
 import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
+import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/services/promos";
+
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,21 +37,28 @@ type ServiceFormData = z.infer<typeof serviceSchema>;
 const galleryImageSchema = z.object({
   src: z.string().url("Must be a valid URL").min(1, "Image URL is required"),
   alt: z.string().min(1, "Alt text is required"),
-  aiHint: z.string().min(1, "AI Hint is required"),
 });
 
 type GalleryImageFormData = z.infer<typeof galleryImageSchema>;
 
+const promoCodeSchema = z.object({
+    code: z.string().min(1, "Code is required"),
+    discount: z.string().min(1, "Discount is required (e.g., '15%' or '$10')"),
+});
+
+type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
 
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
   const [isGalleryDialogOpen, setIsGalleryDialogOpen] = useState(false);
+  const [isPromoCodeDialogOpen, setIsPromoCodeDialogOpen] = useState(false);
 
 
   const serviceForm = useForm<ServiceFormData>({
@@ -61,8 +70,11 @@ export default function AdminPage() {
      defaultValues: {
       src: 'https://placehold.co/800x600.png',
       alt: 'A placeholder image',
-      aiHint: 'placeholder'
     }
+  });
+
+  const promoCodeForm = useForm<PromoCodeFormData>({
+      resolver: zodResolver(promoCodeSchema),
   });
 
 
@@ -78,11 +90,13 @@ export default function AdminPage() {
 
     const unsubscribeServices = onServicesUpdate(setServices);
     const unsubscribeGallery = onGalleryImagesUpdate(setGalleryImages);
+    const unsubscribePromoCodes = onPromoCodesUpdate(setPromoCodes);
 
     return () => {
       unsubscribeBookings();
       unsubscribeServices();
       unsubscribeGallery();
+      unsubscribePromoCodes();
     };
   }, []);
 
@@ -145,8 +159,23 @@ export default function AdminPage() {
 
   const handleGalleryFormSubmit: SubmitHandler<GalleryImageFormData> = async (data) => {
     await addGalleryImage(data);
-    galleryForm.reset();
+    galleryForm.reset({
+      src: 'https://placehold.co/800x600.png',
+      alt: 'A placeholder image',
+    });
     setIsGalleryDialogOpen(false);
+  };
+  
+  const handlePromoCodeFormSubmit: SubmitHandler<PromoCodeFormData> = async (data) => {
+    await addPromoCode(data);
+    promoCodeForm.reset();
+    setIsPromoCodeDialogOpen(false);
+  };
+
+  const handleDeletePromoCode = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this promo code?")) {
+      await deletePromoCode(id);
+    }
   };
 
   const handleDeleteGalleryImage = async (id: string) => {
@@ -185,6 +214,7 @@ export default function AdminPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Service</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Promo</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -195,6 +225,7 @@ export default function AdminPage() {
                       <TableCell>{booking.name}</TableCell>
                       <TableCell>{booking.service}</TableCell>
                       <TableCell>{getFormattedDate(booking.date)}</TableCell>
+                       <TableCell>{booking.promoCode || 'N/A'}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn(
                           booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
@@ -296,7 +327,7 @@ export default function AdminPage() {
                 </div>
                  <Dialog open={isGalleryDialogOpen} onOpenChange={setIsGalleryDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => { galleryForm.reset(); setIsGalleryDialogOpen(true); }}>Add Image</Button>
+                        <Button onClick={() => { setIsGalleryDialogOpen(true); }}>Add Image</Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -312,11 +343,6 @@ export default function AdminPage() {
                                 <Label htmlFor="alt">Alt Text</Label>
                                 <Input id="alt" {...galleryForm.register("alt")} />
                                 {galleryForm.formState.errors.alt && <p className="text-red-500 text-xs mt-1">{galleryForm.formState.errors.alt.message}</p>}
-                            </div>
-                             <div>
-                                <Label htmlFor="aiHint">AI Hint</Label>
-                                <Input id="aiHint" {...galleryForm.register("aiHint")} />
-                                {galleryForm.formState.errors.aiHint && <p className="text-red-500 text-xs mt-1">{galleryForm.formState.errors.aiHint.message}</p>}
                             </div>
                             <DialogFooter>
                                 <DialogClose asChild>
@@ -338,7 +364,6 @@ export default function AdminPage() {
                                 width={400} 
                                 height={300} 
                                 className="rounded-lg object-cover w-full aspect-square"
-                                data-ai-hint={image.aiHint}
                             />
                             <div className="absolute top-0 right-0 m-2">
                                 <Button variant="destructive" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteGalleryImage(image.id!)}>
@@ -365,13 +390,61 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="promos">
            <Card>
-            <CardHeader>
-              <CardTitle>Manage Promo Codes</CardTitle>
-              <CardDescription>Create and manage discount codes for clients.</CardDescription>
+            <CardHeader  className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Manage Promo Codes</CardTitle>
+                <CardDescription>Create and manage discount codes for clients.</CardDescription>
+              </div>
+                <Dialog open={isPromoCodeDialogOpen} onOpenChange={setIsPromoCodeDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button onClick={() => { promoCodeForm.reset(); setIsPromoCodeDialogOpen(true); }}>Add Promo Code</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add New Promo Code</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={promoCodeForm.handleSubmit(handlePromoCodeFormSubmit)} className="space-y-4">
+                            <div>
+                                <Label htmlFor="code">Promo Code</Label>
+                                <Input id="code" {...promoCodeForm.register("code")} />
+                                {promoCodeForm.formState.errors.code && <p className="text-red-500 text-xs mt-1">{promoCodeForm.formState.errors.code.message}</p>}
+                            </div>
+                             <div>
+                                <Label htmlFor="discount">Discount</Label>
+                                <Input id="discount" {...promoCodeForm.register("discount")} placeholder="e.g. 15% or $10"/>
+                                {promoCodeForm.formState.errors.discount && <p className="text-red-500 text-xs mt-1">{promoCodeForm.formState.errors.discount.message}</p>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button type="submit">Add Code</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </CardHeader>
             <CardContent>
-              <p>Promo code management UI will be here.</p>
-               <Button className="mt-4">Create Promo Code</Button>
+               <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Discount</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {promoCodes.map((promo) => (
+                    <TableRow key={promo.id}>
+                      <TableCell>{promo.code}</TableCell>
+                      <TableCell>{promo.discount}</TableCell>
+                      <TableCell>
+                         <Button variant="destructive" size="sm" onClick={() => handleDeletePromoCode(promo.id!)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>

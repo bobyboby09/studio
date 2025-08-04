@@ -38,6 +38,7 @@ const bookingFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   phone: z.string().min(10, "Please enter a valid phone number."),
   notes: z.string().optional(),
+  promoCode: z.string().optional(),
 })
 
 export default function BookingPage() {
@@ -55,6 +56,7 @@ export default function BookingPage() {
             name: "",
             phone: "",
             notes: "",
+            promoCode: "",
         },
     })
 
@@ -191,6 +193,19 @@ export default function BookingPage() {
                      <FormDescription>
                       Any details like number of songs, genre, or specific requirements.
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="promoCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Promo Code (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter promo code" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

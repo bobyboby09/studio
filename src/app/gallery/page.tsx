@@ -28,7 +28,6 @@ export default function GalleryPage() {
             width={800}
             height={600}
             className="rounded-lg shadow-lg hover:shadow-primary/20 transition-shadow duration-300 w-full h-auto"
-            data-ai-hint={image.aiHint}
           />
         ))}
       </div>

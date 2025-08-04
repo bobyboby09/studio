@@ -8,6 +8,7 @@ export interface Booking {
   name: string;
   phone: string;
   notes?: string;
+  promoCode?: string;
   status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
 }
 
