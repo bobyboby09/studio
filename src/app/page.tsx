@@ -27,15 +27,21 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      <section className="py-20 md:py-32 bg-black text-center relative">
-        <div className="container mx-auto px-4 z-10">
-          <h1 className="font-headline text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-white mb-4">
+      <section className="py-24 md:py-40 bg-black text-center relative overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-50"
+        />
+        <div 
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-black"
+        />
+        <div className="container mx-auto px-4 z-10 relative">
+          <h1 className="font-headline text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-400 mb-4 animate-fade-in-up">
             प्रदीप फिल्म्स स्टूडियो और मिक्सिंग लैब
           </h1>
-          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
             जहाँ आपकी संगीत दृष्टि को उसकी उत्तम ध्वनि मिलती है। सर्वश्रेष्ठ की मांग करने वाले कलाकारों के लिए पेशेवर रिकॉर्डिंग, मिक्सिंग और मास्टरिंग सेवाएँ।
           </p>
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="animate-fade-in-up" style={{animationDelay: '0.6s'}}>
             <Link href="/booking">
               अपना सेशन बुक करें <ArrowRight className="ml-2" />
             </Link>
@@ -51,7 +57,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
-              <Card key={service.id} className="flex flex-col animate-fade-in-up" style={{ animationDelay: `${index * 150}ms`}}>
+              <Card key={service.id} className="flex flex-col animate-fade-in-up border-primary/20 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 bg-card/50 backdrop-blur-sm" style={{ animationDelay: `${index * 150}ms`}}>
                 <CardHeader>
                   <CardTitle className="pt-4">{service.name}</CardTitle>
                   <CardDescription>{service.description}</CardDescription>
@@ -97,7 +103,7 @@ export default function Home() {
               </div>
             </div>
             <div>
-              <Card className="bg-gradient-to-br from-gray-900 to-black border-primary/50 shadow-2xl shadow-primary/10">
+              <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20 shadow-2xl shadow-primary/10">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="text-primary" />
