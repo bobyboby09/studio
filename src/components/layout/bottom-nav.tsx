@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Camera, Ticket, BookUser, Gift, Handshake } from "lucide-react";
+import { Home, Camera, Ticket, BookUser, Gift, Handshake, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/booking", label: "बुक करें", icon: BookUser },
   { href: "/my-bookings", label: "बुकिंग", icon: Ticket },
   { href: "/partner", label: "पार्टनर", icon: Handshake },
+  { href: "/partner/dashboard", label: "डैशबोर्ड", icon: LayoutDashboard },
 ];
 
 export function BottomNav() {
