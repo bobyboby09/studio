@@ -7,13 +7,16 @@ import { Home, Camera, Ticket, BookUser, Gift, Handshake, LayoutDashboard } from
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-const navLinks = [
+const baseNavLinks = [
   { href: "/", label: "होम", icon: Home },
   { href: "/gallery", label: "गैलरी", icon: Camera },
   { href: "/booking", label: "बुक करें", icon: BookUser },
   { href: "/my-bookings", label: "बुकिंग", icon: Ticket },
-  { href: "/partner", label: "पार्टनर", icon: Handshake },
 ];
+
+const partnerLink = { href: "/partner", label: "पार्टनर", icon: Handshake };
+const dashboardLinkInfo = { href: "/partner/dashboard", label: "डैशबोर्ड", icon: LayoutDashboard };
+
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -27,9 +30,12 @@ export function BottomNav() {
     }
   }, [pathname]); // Rerun when path changes to update active state correctly
 
-  const dashboardLink = partnerId ? `/partner/dashboard?id=${partnerId}` : "/partner";
-
-  const allLinks = [...navLinks, { href: dashboardLink, label: "डैशबोर्ड", icon: LayoutDashboard }];
+  let allLinks = [...baseNavLinks];
+  if (partnerId) {
+    allLinks.push({ ...dashboardLinkInfo, href: `/partner/dashboard?id=${partnerId}` });
+  } else {
+    allLinks.push(partnerLink);
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-primary/20 md:hidden">
