@@ -22,12 +22,26 @@ export default function MyBookingsPage() {
     const unsubscribe = onBookingsUpdate((allBookings) => {
       // In a real app, you'd filter this to the logged-in user's bookings.
       // For now, we'll show all bookings like the admin page.
-      const sortedBookings = allBookings.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sortedBookings = allBookings.sort((a, b) => {
+        const dateA = a.date as any;
+        const dateB = b.date as any;
+        return dateB.toDate().getTime() - dateA.toDate().getTime();
+      });
       setBookings(sortedBookings);
     });
 
     return () => unsubscribe();
   }, []);
+
+  const getFormattedDate = (date: any) => {
+    if (date && typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPP");
+    }
+    if (date instanceof Date) {
+      return format(date, "PPP");
+    }
+    return "Invalid Date";
+  }
 
 
   return (
@@ -52,7 +66,7 @@ export default function MyBookingsPage() {
               {bookings.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell>{booking.service}</TableCell>
-                  <TableCell>{format(new Date(booking.date), "PPP")}</TableCell>
+                  <TableCell>{getFormattedDate(booking.date)}</TableCell>
                   <TableCell className="text-right">
                     <Badge
                       variant="outline"

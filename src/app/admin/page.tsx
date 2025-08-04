@@ -15,7 +15,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     const unsubscribe = onBookingsUpdate((bookings) => {
-      const sortedBookings = bookings.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sortedBookings = bookings.sort((a, b) => {
+        const dateA = a.date as any;
+        const dateB = b.date as any;
+        return dateB.toDate().getTime() - dateA.toDate().getTime();
+      });
       setAllBookings(sortedBookings);
     });
 
@@ -31,6 +35,17 @@ export default function AdminPage() {
       await deleteBooking(id);
     }
   }
+
+  const getFormattedDate = (date: any) => {
+    if (date && typeof date.toDate === 'function') {
+      return format(date.toDate(), "PPP");
+    }
+    if (date instanceof Date) {
+      return format(date, "PPP");
+    }
+    return "Invalid Date";
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -70,7 +85,7 @@ export default function AdminPage() {
                     <TableRow key={booking.id}>
                       <TableCell>{booking.name}</TableCell>
                       <TableCell>{booking.service}</TableCell>
-                      <TableCell>{format(new Date(booking.date), "PPP")}</TableCell>
+                      <TableCell>{getFormattedDate(booking.date)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn(
                           booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
