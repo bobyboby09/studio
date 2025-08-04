@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate } from "@/services/bookings";
+import { Partner, getPartnerById } from "@/services/partners";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -23,15 +24,19 @@ import { DollarSign, Briefcase, User, Ticket } from "lucide-react";
 export default function PartnerDashboardPage() {
   const searchParams = useSearchParams();
   const partnerId = searchParams.get('id');
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [partner, setPartner] = useState<Partner | null>(null);
   const [partnerBookings, setPartnerBookings] = useState<Booking[]>([]);
   
-  // Dummy data for now
   const totalReferrals = partnerBookings.length;
-  const totalEarnings = partnerBookings.filter(b => b.status === 'Completed').length * 100; // Assuming 100 per completed booking
 
   useEffect(() => {
     if (!partnerId) return;
+
+    const fetchPartner = async () => {
+        const p = await getPartnerById(partnerId);
+        setPartner(p);
+    }
+    fetchPartner();
     
     const unsubscribe = onBookingsUpdate((allBookings) => {
        const filteredBookings = allBookings.filter(booking => booking.partnerId === partnerId);
@@ -94,7 +99,7 @@ export default function PartnerDashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalEarnings.toLocaleString('en-IN')}</div>
+            <div className="text-2xl font-bold">₹{(partner?.earnings || 0).toLocaleString('en-IN')}</div>
             <p className="text-xs text-muted-foreground">
               सभी समय की कुल कमाई
             </p>

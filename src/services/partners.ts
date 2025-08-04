@@ -1,12 +1,13 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, orderBy, getDoc } from 'firebase/firestore';
 
 export interface Partner {
   id?: string;
   whatsappNumber: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   createdAt: any;
+  earnings?: number;
 }
 
 const partnersCollection = collection(db, 'partners');
@@ -24,6 +25,7 @@ export const requestPartnerAccess = async (whatsappNumber: string) => {
     whatsappNumber,
     status: 'Pending',
     createdAt: serverTimestamp(),
+    earnings: 0,
   };
   return await addDoc(partnersCollection, newPartnerRequest);
 };
@@ -40,6 +42,15 @@ export const getPartnerByWhatsappNumber = async (whatsappNumber: string): Promis
     return { id: partnerDoc.id, ...partnerDoc.data() } as Partner;
 };
 
+export const getPartnerById = async (id: string): Promise<Partner | null> => {
+    const partnerDocRef = doc(db, 'partners', id);
+    const partnerDoc = await getDoc(partnerDocRef);
+    if (partnerDoc.exists()) {
+        return { id: partnerDoc.id, ...partnerDoc.data() } as Partner;
+    }
+    return null;
+}
+
 
 export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
   const q = query(partnersCollection, orderBy('createdAt', 'desc'));
@@ -49,7 +60,7 @@ export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
   });
 };
 
-export const updatePartnerStatus = async (id: string, status: Partner['status']) => {
+export const updatePartner = async (id: string, data: Partial<Partner>) => {
   const partnerDoc = doc(db, 'partners', id);
-  return await updateDoc(partnerDoc, { status });
+  return await updateDoc(partnerDoc, data);
 };

@@ -19,7 +19,7 @@ import { Service, onServicesUpdate, addService, deleteService, updateService } f
 import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/services/promos";
 import { Update, onUpdatesUpdate, addUpdate, deleteUpdate, updateUpdate } from "@/services/updates";
 import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
-import { Partner, onPartnersUpdate, updatePartnerStatus } from "@/services/partners";
+import { Partner, onPartnersUpdate, updatePartner } from "@/services/partners";
 import { PartnerCondition, onPartnerConditionsUpdate, addPartnerCondition, deletePartnerCondition, updatePartnerCondition } from "@/services/partnerConditions";
 
 
@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Handshake, Ticket, GalleryHorizontal, Megaphone, Sparkles, SlidersHorizontal, PlusCircle, FileText } from "lucide-react";
+import { Handshake, Ticket, GalleryHorizontal, Megaphone, Sparkles, SlidersHorizontal, PlusCircle, FileText, Edit } from "lucide-react";
 
 
 const serviceSchema = z.object({
@@ -61,6 +61,14 @@ const partnerConditionSchema = z.object({
 });
 type PartnerConditionFormData = z.infer<typeof partnerConditionSchema>;
 
+const partnerEarningsSchema = z.object({
+    earnings: z.preprocess(
+        (val) => (val === "" ? undefined : Number(val)),
+        z.number({ invalid_type_error: "Please enter a valid number." }).min(0, "Earnings must be a positive number.").optional()
+    ),
+});
+type PartnerEarningsFormData = z.infer<typeof partnerEarningsSchema>;
+
 
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -84,12 +92,16 @@ export default function AdminPage() {
   const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
   const [editingCondition, setEditingCondition] = useState<PartnerCondition | null>(null);
 
+  const [isPartnerEarningsDialogOpen, setIsPartnerEarningsDialogOpen] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+
 
   const serviceForm = useForm<ServiceFormData>({ resolver: zodResolver(serviceSchema) });
   const promoCodeForm = useForm<PromoCodeFormData>({ resolver: zodResolver(promoCodeSchema) });
   const updateForm = useForm<UpdateFormData>({ resolver: zodResolver(updateSchema) });
   const galleryImageForm = useForm<GalleryImageFormData>({ resolver: zodResolver(galleryImageSchema) });
   const conditionForm = useForm<PartnerConditionFormData>({ resolver: zodResolver(partnerConditionSchema) });
+  const partnerEarningsForm = useForm<PartnerEarningsFormData>({ resolver: zodResolver(partnerEarningsSchema) });
 
 
   useEffect(() => {
@@ -250,8 +262,23 @@ export default function AdminPage() {
 
   // Partner handlers
   const handlePartnerStatusUpdate = async (id: string, status: Partner['status']) => {
-      await updatePartnerStatus(id, status);
+      await updatePartner(id, { status });
   }
+
+  const handleEditPartnerEarnings = (partner: Partner) => {
+      setEditingPartner(partner);
+      partnerEarningsForm.setValue("earnings", partner.earnings || 0);
+      setIsPartnerEarningsDialogOpen(true);
+  };
+
+  const handlePartnerEarningsFormSubmit: SubmitHandler<PartnerEarningsFormData> = async (data) => {
+      if (editingPartner) {
+          await updatePartner(editingPartner.id!, { earnings: data.earnings });
+      }
+      partnerEarningsForm.reset();
+      setEditingPartner(null);
+      setIsPartnerEarningsDialogOpen(false);
+  };
 
   // Partner Condition Handlers
   const handleConditionFormSubmit: SubmitHandler<PartnerConditionFormData> = async (data) => {
@@ -621,8 +648,9 @@ export default function AdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>WhatsApp Number</TableHead>
+                    <TableHead>Earnings</TableHead>
                     <TableHead>Status</TableHead>
-                     <TableHead>Requested At</TableHead>
+                    <TableHead>Requested At</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -630,6 +658,7 @@ export default function AdminPage() {
                   {partners.map((partner) => (
                     <TableRow key={partner.id}>
                       <TableCell>{partner.whatsappNumber}</TableCell>
+                       <TableCell>₹{partner.earnings || 0}</TableCell>
                       <TableCell>
                          <Badge variant={
                             partner.status === 'Approved' ? 'default' :
@@ -657,11 +686,32 @@ export default function AdminPage() {
                         {partner.status === 'Rejected' && (
                               <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
                         )}
+                        <Button variant="outline" size="sm" onClick={() => handleEditPartnerEarnings(partner)}><Edit className="mr-1 h-3 w-3"/> Earnings</Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              <Dialog open={isPartnerEarningsDialogOpen} onOpenChange={setIsPartnerEarningsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Update Partner Earnings</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={partnerEarningsForm.handleSubmit(handlePartnerEarningsFormSubmit)} className="space-y-4">
+                        <div>
+                            <Label htmlFor="earnings">Earnings</Label>
+                            <Input id="earnings" type="number" {...partnerEarningsForm.register("earnings")} />
+                            {partnerEarningsForm.formState.errors.earnings && <p className="text-red-500 text-xs mt-1">{partnerEarningsForm.formState.errors.earnings.message}</p>}
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="ghost">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+               </Dialog>
             </CardContent>
           </Card>
         </TabsContent>
@@ -725,5 +775,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
