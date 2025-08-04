@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Music, User, Image as ImageIcon, Calendar, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/icons";
 import { usePathname } from "next/navigation";
@@ -54,11 +54,15 @@ export function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="pr-0">
-                <Link href="/" className="mr-6 flex items-center space-x-2 mb-6">
-                  <Logo className="h-6 w-6 text-primary" />
-                  <span className="font-bold font-headline">Studio Maestro</span>
-                </Link>
-                <nav className="flex flex-col space-y-4">
+                <SheetHeader className="p-6 text-left">
+                  <SheetTitle>
+                     <Link href="/" className="flex items-center space-x-2">
+                        <Logo className="h-6 w-6 text-primary" />
+                        <span className="font-bold font-headline">Studio Maestro</span>
+                      </Link>
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col space-y-4 p-6 pt-0">
                   {navLinks.map((link) => (
                     <Link
                       key={link.href}
