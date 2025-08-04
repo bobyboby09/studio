@@ -30,7 +30,6 @@ export function Footer() {
              <h3 className="font-headline text-lg mb-4 text-white">हमारे साथ जुड़ें</h3>
              <ul className="space-y-2">
                 <li><Link href="/partner" className="text-muted-foreground hover:text-primary">पार्टनर बनें</Link></li>
-                <li><Link href="/admin" className="text-muted-foreground hover:text-primary">एडमिन लॉगिन</Link></li>
              </ul>
           </div>
           

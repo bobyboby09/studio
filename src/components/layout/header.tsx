@@ -87,7 +87,7 @@ export function Header() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col space-y-4 p-6 pt-4">
-                {[...navLinks, { href: "/offers", label: "ऑफर्स" }, { href: "/partner", label: "पार्टनर बनें" }, { href: "/admin", label: "एडमिन" }].map((link) => (
+                {[...navLinks, { href: "/offers", label: "ऑफर्स" }, { href: "/partner", label: "पार्टनर बनें" }].map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
