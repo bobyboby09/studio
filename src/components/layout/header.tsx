@@ -20,73 +20,85 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="hidden font-bold sm:inline-block font-headline text-xl">
-              प्रदीप फिल्म्स स्टूडियो
-            </span>
-          </Link>
-          <nav className="flex items-center gap-6 text-sm">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "transition-colors hover:text-foreground/80",
-                  pathname === link.href ? "text-foreground" : "text-foreground/60"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+    <header className="sticky top-0 z-40 w-full border-b border-primary/20 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
+      <div className="container flex h-20 items-center justify-between">
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6 text-sm">
+          {navLinks.slice(0, 2).map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "transition-colors hover:text-primary text-lg",
+                pathname === link.href ? "text-primary font-bold" : "text-foreground/80"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">मेनू टॉगल करें</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="pr-0">
-                <SheetHeader className="p-6 text-left">
-                  <SheetTitle>
-                     <Link href="/" className="flex items-center space-x-2">
-                        <Camera className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline text-lg">प्रदीप फिल्म्स स्टूडियो</span>
-                      </Link>
-                  </SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col space-y-4 p-6 pt-0">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={cn(
-                        "transition-colors hover:text-foreground/80 p-2 rounded-md",
-                        pathname === link.href ? "bg-accent text-accent-foreground" : "text-foreground/70"
-                      )}
-                    >
-                      {link.label}
+
+        <div className="flex-1 flex justify-center">
+           <Link href="/" className="flex items-center space-x-3">
+              <Camera className="h-8 w-8 text-primary" />
+              <span className="font-bold sm:inline-block font-headline text-2xl md:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-primary to-yellow-300">
+                प्रदीप फिल्म्स स्टूडियो
+              </span>
+            </Link>
+        </div>
+
+        <div className="hidden md:flex items-center gap-6 text-sm">
+           {navLinks.slice(2, 4).map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "transition-colors hover:text-primary text-lg",
+                pathname === link.href ? "text-primary font-bold" : "text-foreground/80"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile Navigation Trigger */}
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6 text-primary" />
+                <span className="sr-only">मेनू टॉगल करें</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="pr-0 bg-black">
+              <SheetHeader className="p-6 text-left border-b border-primary/20">
+                <SheetTitle>
+                    <Link href="/" className="flex items-center space-x-2">
+                      <Camera className="h-6 w-6 text-primary" />
+                      <span className="font-bold font-headline text-lg text-white">प्रदीप फिल्म्स स्टूडियो</span>
                     </Link>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
-          <Link href="/" className="flex items-center space-x-2 md:hidden">
-            <Camera className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline text-lg">प्रदीप फिल्म्स स्टूडियो</span>
-          </Link>
-          <Button asChild>
-            <Link href="/booking">अभी बुक करें</Link>
-          </Button>
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col space-y-4 p-6 pt-4">
+                {[...navLinks, { href: "/offers", label: "ऑफर्स" }].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "transition-colors hover:text-primary p-2 rounded-md text-lg",
+                      pathname === link.href ? "bg-primary/10 text-primary font-bold" : "text-foreground/70"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
+
       </div>
     </header>
   );

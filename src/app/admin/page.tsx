@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@/services/bookings";
 import { Service, onServicesUpdate, addService, deleteService, updateService } from "@/services/services";
 import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/services/promos";
+import { Update, onUpdatesUpdate, addUpdate, deleteUpdate, updateUpdate } from "@/services/updates";
 
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -28,34 +29,40 @@ const serviceSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.string().min(1, "Price is required"),
 });
-
 type ServiceFormData = z.infer<typeof serviceSchema>;
 
 const promoCodeSchema = z.object({
     code: z.string().min(1, "Code is required"),
     discount: z.string().min(1, "Discount is required (e.g., '15%' or '$10')"),
 });
-
 type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
+
+const updateSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  imageUrl: z.string().url().optional().or(z.literal('')),
+});
+type UpdateFormData = z.infer<typeof updateSchema>;
+
 
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+  const [updates, setUpdates] = useState<Update[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
   const [isPromoCodeDialogOpen, setIsPromoCodeDialogOpen] = useState(false);
 
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
 
-  const serviceForm = useForm<ServiceFormData>({
-    resolver: zodResolver(serviceSchema),
-  });
 
-  const promoCodeForm = useForm<PromoCodeFormData>({
-      resolver: zodResolver(promoCodeSchema),
-  });
+  const serviceForm = useForm<ServiceFormData>({ resolver: zodResolver(serviceSchema) });
+  const promoCodeForm = useForm<PromoCodeFormData>({ resolver: zodResolver(promoCodeSchema) });
+  const updateForm = useForm<UpdateFormData>({ resolver: zodResolver(updateSchema) });
 
 
   useEffect(() => {
@@ -63,18 +70,23 @@ export default function AdminPage() {
       const sortedBookings = bookings.sort((a, b) => {
         const dateA = a.date as any;
         const dateB = b.date as any;
-        return dateB.toDate().getTime() - dateA.toDate().getTime();
+        if (dateA?.toDate && dateB?.toDate) {
+            return dateB.toDate().getTime() - dateA.toDate().getTime();
+        }
+        return 0;
       });
       setAllBookings(sortedBookings);
     });
 
     const unsubscribeServices = onServicesUpdate(setServices);
     const unsubscribePromoCodes = onPromoCodesUpdate(setPromoCodes);
+    const unsubscribeUpdates = onUpdatesUpdate(setUpdates);
 
     return () => {
       unsubscribeBookings();
       unsubscribeServices();
       unsubscribePromoCodes();
+      unsubscribeUpdates();
     };
   }, []);
 
@@ -96,14 +108,19 @@ export default function AdminPage() {
       return format(date, "PPP");
     }
     if (typeof date === 'string') {
-        return format(new Date(date), "PPP");
+        try {
+            return format(new Date(date), "PPP");
+        } catch (e) { return "Invalid Date"; }
     }
     if (typeof date === 'number') {
-        return format(new Date(date), "PPP");
+        try {
+            return format(new Date(date), "PPP");
+        } catch(e) { return "Invalid Date"; }
     }
     return "Invalid Date";
   }
 
+  // Service handlers
   const handleServiceFormSubmit: SubmitHandler<ServiceFormData> = async (data) => {
     if (editingService) {
       await updateService(editingService.id!, data);
@@ -135,6 +152,7 @@ export default function AdminPage() {
     setIsServiceDialogOpen(true);
   };
   
+  // Promo code handlers
   const handlePromoCodeFormSubmit: SubmitHandler<PromoCodeFormData> = async (data) => {
     await addPromoCode(data);
     promoCodeForm.reset();
@@ -146,6 +164,39 @@ export default function AdminPage() {
       await deletePromoCode(id);
     }
   };
+
+  // Update handlers
+  const handleUpdateFormSubmit: SubmitHandler<UpdateFormData> = async (data) => {
+    if (editingUpdate) {
+      await updateUpdate(editingUpdate.id!, data);
+    } else {
+      await addUpdate(data);
+    }
+    updateForm.reset();
+    setEditingUpdate(null);
+    setIsUpdateDialogOpen(false);
+  };
+
+  const handleEditUpdate = (update: Update) => {
+    setEditingUpdate(update);
+    updateForm.setValue("title", update.title);
+    updateForm.setValue("description", update.description);
+    updateForm.setValue("imageUrl", update.imageUrl || "");
+    setIsUpdateDialogOpen(true);
+  };
+
+  const handleDeleteUpdate = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this update?")) {
+      await deleteUpdate(id);
+    }
+  };
+
+  const openNewUpdateDialog = () => {
+    updateForm.reset();
+    setEditingUpdate(null);
+    setIsUpdateDialogOpen(true);
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -213,6 +264,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="services">
            <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -279,18 +331,74 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="updates">
            <Card>
-            <CardHeader>
-              <CardTitle>Manage Updates</CardTitle>
-              <CardDescription>Post news and updates to the home page.</CardDescription>
+            <CardHeader  className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Manage Updates</CardTitle>
+                <CardDescription>Post news and updates to the home page.</CardDescription>
+              </div>
+                <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openNewUpdateDialog}>Create New Update</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{editingUpdate ? "Edit Update" : "Create New Update"}</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={updateForm.handleSubmit(handleUpdateFormSubmit)} className="space-y-4">
+                    <div>
+                        <Label htmlFor="title">Title</Label>
+                        <Input id="title" {...updateForm.register("title")} />
+                        {updateForm.formState.errors.title && <p className="text-red-500 text-xs mt-1">{updateForm.formState.errors.title.message}</p>}
+                    </div>
+                    <div>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" {...updateForm.register("description")} />
+                        {updateForm.formState.errors.description && <p className="text-red-500 text-xs mt-1">{updateForm.formState.errors.description.message}</p>}
+                    </div>
+                    <div>
+                        <Label htmlFor="imageUrl">Image URL (Optional)</Label>
+                        <Input id="imageUrl" {...updateForm.register("imageUrl")} placeholder="https://placehold.co/600x400.png" />
+                         {updateForm.formState.errors.imageUrl && <p className="text-red-500 text-xs mt-1">{updateForm.formState.errors.imageUrl.message}</p>}
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="ghost">Cancel</Button>
+                      </DialogClose>
+                      <Button type="submit">{editingUpdate ? "Save Changes" : "Create Update"}</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
-              <p>Updates management UI will be here.</p>
-              <Button className="mt-4">Create New Update</Button>
+               <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {updates.map((update) => (
+                    <TableRow key={update.id}>
+                      <TableCell>{update.title}</TableCell>
+                      <TableCell>{update.description}</TableCell>
+                      <TableCell className="space-x-2">
+                         <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)}>Edit</Button>
+                         <Button variant="destructive" size="sm" onClick={() => handleDeleteUpdate(update.id!)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
+
         <TabsContent value="promos">
            <Card>
             <CardHeader  className="flex flex-row items-center justify-between">

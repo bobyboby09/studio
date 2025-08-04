@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,6 +15,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate } from "@/services/bookings";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Ticket } from "lucide-react";
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -26,7 +29,10 @@ export default function MyBookingsPage() {
       const sortedBookings = allBookings.sort((a, b) => {
         const dateA = a.date as any;
         const dateB = b.date as any;
-        return dateB.toDate().getTime() - dateA.toDate().getTime();
+        if(dateA?.toDate && dateB?.toDate) {
+          return dateB.toDate().getTime() - dateA.toDate().getTime();
+        }
+        return 0;
       });
       setBookings(sortedBookings);
     });
@@ -54,37 +60,53 @@ export default function MyBookingsPage() {
         </p>
       </div>
       <Card>
+        <CardHeader>
+           <CardTitle>आपकी बुकिंग की स्थिति</CardTitle>
+           <CardDescription>यहां आपकी सभी पिछली और आने वाली बुकिंग्स हैं।</CardDescription>
+        </CardHeader>
         <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>सेवा</TableHead>
-                <TableHead>तारीख</TableHead>
-                <TableHead className="text-right">स्थिति</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell>{booking.service}</TableCell>
-                  <TableCell>{getFormattedDate(booking.date)}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
-                        booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
-                        booking.status === 'Completed' && 'text-green-400 border-green-400',
-                        booking.status === 'Cancelled' && 'text-red-400 border-red-400'
-                      )}
-                    >
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            {bookings.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>सेवा</TableHead>
+                        <TableHead>तारीख</TableHead>
+                        <TableHead className="text-right">स्थिति</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {bookings.map((booking) => (
+                        <TableRow key={booking.id}>
+                        <TableCell>{booking.service}</TableCell>
+                        <TableCell>{getFormattedDate(booking.date)}</TableCell>
+                        <TableCell className="text-right">
+                            <Badge
+                            variant="outline"
+                            className={cn(
+                                'text-sm',
+                                booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
+                                booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
+                                booking.status === 'Completed' && 'text-green-400 border-green-400',
+                                booking.status === 'Cancelled' && 'text-red-400 border-red-400'
+                            )}
+                            >
+                            {booking.status}
+                            </Badge>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                <div className="text-center py-12">
+                    <Ticket className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">कोई बुकिंग नहीं मिली</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">ऐसा लगता है कि आपने अभी तक कोई सेशन बुक नहीं किया है।</p>
+                    <Button asChild className="mt-6">
+                        <Link href="/booking">अभी बुक करें</Link>
+                    </Button>
+                </div>
+            )}
         </CardContent>
       </Card>
     </div>

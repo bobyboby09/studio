@@ -1,8 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
+import { BottomNav } from '@/components/layout/bottom-nav';
 
 
 export const metadata: Metadata = {
@@ -25,8 +27,9 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <div className="flex flex-col min-h-screen">
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main className="flex-grow pb-16 md:pb-0">{children}</main>
           <Footer />
+          <BottomNav />
         </div>
         <Toaster />
       </body>
