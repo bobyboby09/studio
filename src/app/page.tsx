@@ -1,11 +1,25 @@
+
+"use client";
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Music, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { onServicesUpdate, Service } from '@/services/services';
 
 export default function Home() {
+  const [services, setServices] = useState<Service[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onServicesUpdate((allServices) => {
+      setServices(allServices.slice(0, 3)); // Show latest 3 services
+    });
+    return () => unsubscribe();
+  }, []);
+
   const updates = [
     { title: 'New Analog Compressor Added', description: 'The new "Golden Ears" compressor is now available for all mixing sessions.' },
     { title: 'Studio B Acoustics Upgraded', description: 'We have revamped the acoustics in Studio B for an even cleaner sound.' },
@@ -46,6 +60,41 @@ export default function Home() {
         </div>
       </section>
 
+      <Separator />
+
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="font-headline text-4xl font-bold">Our Services</h2>
+            <p className="text-lg text-muted-foreground mt-2">Tailored solutions for every artist.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service) => (
+              <Card key={service.id} className="flex flex-col">
+                <CardHeader>
+                  <Image src={service.image} alt={service.name} width={600} height={400} className="rounded-t-lg aspect-[3/2] object-cover" data-ai-hint={service.aiHint} />
+                  <CardTitle className="pt-4">{service.name}</CardTitle>
+                  <CardDescription>{service.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-2xl font-bold text-primary">{service.price}</p>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full">
+                    <Link href="/booking">Book Now</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-12">
+            <Button asChild variant="outline">
+              <Link href="/services">View All Services <ArrowRight className="ml-2" /></Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+      
       <Separator />
 
       <section className="py-16 md:py-24">
