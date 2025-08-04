@@ -21,16 +21,26 @@ const dashboardLinkInfo = { href: "/partner/dashboard", label: "डैशबो�
 export function BottomNav() {
   const pathname = usePathname();
   const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This code runs only on the client-side
+    // This will run only on the client, after the component has mounted.
+    setIsClient(true);
     const storedPartnerId = localStorage.getItem("partnerId");
     if (storedPartnerId) {
       setPartnerId(storedPartnerId);
+    } else {
+      // Ensure state is clean if no partnerId is found
+      setPartnerId(null);
     }
-  }, [pathname]); // Rerun when path changes to update active state correctly
+  }, [pathname]); // Rerun when path changes to update active state or partnerId
 
-  let allLinks = [...baseNavLinks];
+  if (!isClient) {
+    // Don't render anything on the server, or render a placeholder
+    return null; 
+  }
+
+  const allLinks = [...baseNavLinks];
   if (partnerId) {
     allLinks.push({ ...dashboardLinkInfo, href: `/partner/dashboard?id=${partnerId}` });
   } else {
