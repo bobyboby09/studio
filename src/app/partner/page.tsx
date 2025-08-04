@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { requestPartnerAccess, getPartnerByWhatsappNumber, Partner } from "@/services/partners";
 import { onPartnerConditionsUpdate, PartnerCondition } from "@/services/partnerConditions";
-import { Handshake, FileText, CheckCircle, BadgeCheck, Clock, XCircle, Search, LogIn } from "lucide-react";
+import { Handshake, FileText, CheckCircle, BadgeCheck, Clock, XCircle, Search, LogIn, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import Link from 'next/link';
@@ -192,6 +192,15 @@ export default function PartnerPage() {
           )}
         </CardHeader>
         <CardContent>
+            {view !== "show_status" && (
+              <div className="p-4 mb-6 bg-primary/10 rounded-lg border border-primary/20 text-center">
+                  <h4 className="font-bold text-primary flex items-center justify-center gap-2"><Sparkles className="h-5 w-5"/>विशेष पार्टनर ऑफर!</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                      हर सफल रेफरल पर शानदार कमीशन कमाएं!
+                  </p>
+              </div>
+            )}
+
             {view === 'check_status' && (
                  <Form {...checkStatusForm}>
                     <form onSubmit={checkStatusForm.handleSubmit(onCheckStatus)} className="space-y-4 text-center">
