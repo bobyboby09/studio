@@ -2,6 +2,7 @@
 import { Facebook, Instagram, Twitter, Phone, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '../icons';
+import { Button } from '../ui/button';
 
 export function Footer() {
   return (
@@ -15,15 +16,19 @@ export function Footer() {
             </div>
             <p className="text-muted-foreground">चांदापुर, महाराजगंज, रायबरेली</p>
           </div>
-          <div className="flex flex-col items-center md:items-end mb-6 md:mb-0">
-             <a href="tel:8175817540" className="flex items-center space-x-2 mb-2 text-muted-foreground hover:text-primary">
-                <Phone className="h-4 w-4"/>
-                <span>8175817540</span>
-             </a>
-             <a href="https://wa.me/918175817540" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 text-muted-foreground hover:text-primary">
-                <MessageSquare className="h-4 w-4"/>
-                <span>व्हाट्सएप: 8175817540</span>
-             </a>
+          <div className="flex flex-col items-center md:items-end mb-6 md:mb-0 space-y-2">
+             <Button asChild variant="outline">
+                <a href="tel:8175817540">
+                    <Phone className="h-4 w-4 mr-2"/>
+                    <span>अभी कॉल करें</span>
+                </a>
+             </Button>
+             <Button asChild>
+                <a href="https://wa.me/918175817540" target="_blank" rel="noopener noreferrer">
+                    <MessageSquare className="h-4 w-4 mr-2"/>
+                    <span>व्हाट्सएप पर संदेश भेजें</span>
+                </a>
+             </Button>
           </div>
           <div className="flex space-x-4">
             <Link href="#" className="text-muted-foreground hover:text-primary transition-colors"><Twitter /></Link>
