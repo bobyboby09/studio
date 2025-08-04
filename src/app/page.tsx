@@ -31,7 +31,7 @@ export default function Home() {
       <section className="py-20 md:py-32 bg-black text-center relative">
         <div className="container mx-auto px-4 z-10">
           <h1 className="font-headline text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-white mb-4">
-            Studio Maestro
+            Pradeep film's studio and mixing lab
           </h1>
           <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
             Where your musical vision finds its perfect sound. Professional recording, mixing, and mastering services for artists who demand the best.

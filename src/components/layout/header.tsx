@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -26,7 +27,7 @@ export function Header() {
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block font-headline">
-              Studio Maestro
+              Pradeep film's studio
             </span>
           </Link>
           <nav className="flex items-center gap-6 text-sm">
@@ -58,7 +59,7 @@ export function Header() {
                   <SheetTitle>
                      <Link href="/" className="flex items-center space-x-2">
                         <Logo className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline">Studio Maestro</span>
+                        <span className="font-bold font-headline">Pradeep film's studio</span>
                       </Link>
                   </SheetTitle>
                 </SheetHeader>
@@ -81,7 +82,7 @@ export function Header() {
           </div>
           <Link href="/" className="flex items-center space-x-2 md:hidden">
             <Logo className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">Studio Maestro</span>
+            <span className="font-bold font-headline">Pradeep film's studio</span>
           </Link>
           <Button asChild>
             <Link href="/booking">Book Now</Link>
