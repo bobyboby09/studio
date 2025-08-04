@@ -43,22 +43,6 @@ export default function Home() {
           </Button>
         </div>
       </section>
-      
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="font-headline text-4xl font-bold text-center mb-12">हमारी विश्व स्तरीय सुविधाएँ</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-             <Image src="https://placehold.co/600x400.png" alt="स्टूडियो ए" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="recording studio" />
-             <Image src="https://placehold.co/600x800.png" alt="मिक्सिंग कंसोल" width={600} height={800} className="rounded-lg shadow-lg object-cover w-full h-full md:col-span-1" data-ai-hint="mixing console" />
-             <Image src="https://placehold.co/600x400.png" alt="लाउंज क्षेत्र" width={600} height={400} className="rounded-lg shadow-lg object-cover w-full h-full" data-ai-hint="studio lounge" />
-          </div>
-           <div className="text-center mt-12">
-            <Button asChild variant="outline">
-              <Link href="/gallery">गैलरी देखें <ArrowRight className="ml-2" /></Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       <Separator />
 
