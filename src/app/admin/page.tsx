@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Handshake, Ticket, GalleryHorizontal, Megaphone, Sparkles, SlidersHorizontal, PlusCircle } from "lucide-react";
 
 
 const serviceSchema = z.object({
@@ -247,13 +248,13 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
-          <TabsTrigger value="bookings">Bookings</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
-          <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="gallery">Gallery</TabsTrigger>
-          <TabsTrigger value="promos">Promo Codes</TabsTrigger>
-          <TabsTrigger value="partners">Partners</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6">
+          <TabsTrigger value="bookings"><Ticket className="mr-2"/>Bookings</TabsTrigger>
+          <TabsTrigger value="services"><SlidersHorizontal className="mr-2"/>Services</TabsTrigger>
+          <TabsTrigger value="updates"><Megaphone className="mr-2"/>Updates</TabsTrigger>
+          <TabsTrigger value="gallery"><GalleryHorizontal className="mr-2"/>Gallery</TabsTrigger>
+          <TabsTrigger value="promos"><Sparkles className="mr-2"/>Promo Codes</TabsTrigger>
+          <TabsTrigger value="partners"><Handshake className="mr-2"/>Partners</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bookings">
@@ -282,12 +283,16 @@ export default function AdminPage() {
                       <TableCell>{getFormattedDate(booking.date)}</TableCell>
                        <TableCell>{booking.promoCode || 'N/A'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn(
-                          booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
-                          booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
-                          booking.status === 'Completed' && 'text-green-400 border-green-400',
-                           booking.status === 'Cancelled' && 'text-red-400 border-red-400'
-                        )}>
+                        <Badge variant={
+                          booking.status === 'Confirmed' ? 'default' :
+                          booking.status === 'Pending' ? 'secondary' :
+                          booking.status === 'Completed' ? 'outline' :
+                          'destructive'
+                        }
+                        className={cn(
+                            booking.status === 'Completed' && 'border-green-500 text-green-500'
+                        )}
+                        >
                           {booking.status}
                         </Badge>
                       </TableCell>
@@ -317,7 +322,7 @@ export default function AdminPage() {
               </div>
                <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={openNewServiceDialog}>Add New Service</Button>
+                  <Button onClick={openNewServiceDialog}><PlusCircle className="mr-2"/>Add Service</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -354,6 +359,7 @@ export default function AdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
                     <TableHead>Price</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -361,7 +367,8 @@ export default function AdminPage() {
                 <TableBody>
                   {services.map((service) => (
                     <TableRow key={service.id}>
-                      <TableCell>{service.name}</TableCell>
+                      <TableCell className="font-medium">{service.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{service.description}</TableCell>
                       <TableCell>{service.price}</TableCell>
                       <TableCell className="space-x-2">
                          <Button variant="outline" size="sm" onClick={() => handleEditService(service)}>Edit</Button>
@@ -384,7 +391,7 @@ export default function AdminPage() {
               </div>
                 <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={openNewUpdateDialog}>Create New Update</Button>
+                  <Button onClick={openNewUpdateDialog}><PlusCircle className="mr-2"/>Create Update</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -428,8 +435,8 @@ export default function AdminPage() {
                 <TableBody>
                   {updates.map((update) => (
                     <TableRow key={update.id}>
-                      <TableCell>{update.title}</TableCell>
-                      <TableCell>{update.description}</TableCell>
+                      <TableCell className="font-medium">{update.title}</TableCell>
+                      <TableCell className="text-muted-foreground">{update.description}</TableCell>
                       <TableCell className="space-x-2">
                          <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)}>Edit</Button>
                          <Button variant="destructive" size="sm" onClick={() => handleDeleteUpdate(update.id!)}>Delete</Button>
@@ -451,7 +458,7 @@ export default function AdminPage() {
                     </div>
                     <Dialog open={isGalleryImageDialogOpen} onOpenChange={setIsGalleryImageDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button onClick={openNewGalleryImageDialog}>Add New Image</Button>
+                            <Button onClick={openNewGalleryImageDialog}><PlusCircle className="mr-2"/>Add Image</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -479,28 +486,16 @@ export default function AdminPage() {
                     </Dialog>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Alt Text</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {galleryImages.map((image) => (
-                                <TableRow key={image.id}>
-                                    <TableCell>
-                                        <Image src={image.src} alt={image.alt} width={100} height={75} className="rounded-md object-cover" />
-                                    </TableCell>
-                                    <TableCell>{image.alt}</TableCell>
-                                    <TableCell>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteGalleryImage(image.id!)}>Delete</Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {galleryImages.map((image) => (
+                            <div key={image.id} className="relative group">
+                                <Image src={image.src} alt={image.alt} width={200} height={150} className="rounded-lg object-cover aspect-[4/3]" />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteGalleryImage(image.id!)}>Delete</Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -514,7 +509,7 @@ export default function AdminPage() {
               </div>
                 <Dialog open={isPromoCodeDialogOpen} onOpenChange={setIsPromoCodeDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => { promoCodeForm.reset(); setIsPromoCodeDialogOpen(true); }}>Add Promo Code</Button>
+                        <Button onClick={() => { promoCodeForm.reset(); setIsPromoCodeDialogOpen(true); }}><PlusCircle className="mr-2"/>Add Promo Code</Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -553,8 +548,10 @@ export default function AdminPage() {
                 <TableBody>
                   {promoCodes.map((promo) => (
                     <TableRow key={promo.id}>
-                      <TableCell>{promo.code}</TableCell>
-                      <TableCell>{promo.discount}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-mono">{promo.code}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium text-primary">{promo.discount}</TableCell>
                       <TableCell>
                          <Button variant="destructive" size="sm" onClick={() => handleDeletePromoCode(promo.id!)}>Delete</Button>
                       </TableCell>
@@ -587,11 +584,15 @@ export default function AdminPage() {
                     <TableRow key={partner.id}>
                       <TableCell>{partner.whatsappNumber}</TableCell>
                       <TableCell>
-                         <Badge variant="outline" className={cn(
-                          partner.status === 'Approved' && 'text-green-400 border-green-400',
-                          partner.status === 'Pending' && 'text-yellow-400 border-yellow-400',
-                          partner.status === 'Rejected' && 'text-red-400 border-red-400'
-                        )}>
+                         <Badge variant={
+                            partner.status === 'Approved' ? 'default' :
+                            partner.status === 'Pending' ? 'secondary' :
+                            'destructive'
+                         }
+                         className={cn(
+                           partner.status === 'Approved' && 'bg-green-600'
+                         )}
+                         >
                           {partner.status}
                         </Badge>
                       </TableCell>
