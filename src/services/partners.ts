@@ -28,6 +28,19 @@ export const requestPartnerAccess = async (whatsappNumber: string) => {
   return await addDoc(partnersCollection, newPartnerRequest);
 };
 
+export const getPartnerByWhatsappNumber = async (whatsappNumber: string): Promise<Partner | null> => {
+    const q = query(partnersCollection, where("whatsappNumber", "==", whatsappNumber));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        return null;
+    }
+    
+    const partnerDoc = querySnapshot.docs[0];
+    return { id: partnerDoc.id, ...partnerDoc.data() } as Partner;
+};
+
+
 export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
   const q = query(partnersCollection, orderBy('createdAt', 'desc'));
   return onSnapshot(q, snapshot => {
