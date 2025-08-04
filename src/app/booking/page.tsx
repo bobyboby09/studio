@@ -1,3 +1,4 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -42,6 +43,11 @@ export default function BookingPage() {
 
     const form = useForm<z.infer<typeof bookingFormSchema>>({
         resolver: zodResolver(bookingFormSchema),
+        defaultValues: {
+            name: "",
+            phone: "",
+            notes: "",
+        },
     })
 
     async function onSubmit(data: z.infer<typeof bookingFormSchema>) {
@@ -51,7 +57,7 @@ export default function BookingPage() {
                 title: "Booking Submitted!",
                 description: "We have received your request and will contact you shortly to confirm.",
             })
-            form.reset({ name: '', phone: '', notes: '' });
+            form.reset();
         } catch (error) {
             console.error("Error adding booking: ", error);
             toast({
