@@ -4,8 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Music, User, Image as ImageIcon, Calendar, LayoutDashboard } from "lucide-react";
-import { Logo } from "@/components/icons";
+import { Menu, Camera } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -25,8 +24,8 @@ export function Header() {
       <div className="container flex h-14 max-w-screen-2xl items-center">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Logo className="h-6 w-6 text-primary" />
-            <span className="hidden font-bold sm:inline-block font-headline">
+            <Camera className="h-6 w-6 text-primary" />
+            <span className="hidden font-bold sm:inline-block font-headline text-xl">
               प्रदीप फिल्म्स स्टूडियो
             </span>
           </Link>
@@ -58,8 +57,8 @@ export function Header() {
                 <SheetHeader className="p-6 text-left">
                   <SheetTitle>
                      <Link href="/" className="flex items-center space-x-2">
-                        <Logo className="h-6 w-6 text-primary" />
-                        <span className="font-bold font-headline">प्रदीप फिल्म्स स्टूडियो</span>
+                        <Camera className="h-6 w-6 text-primary" />
+                        <span className="font-bold font-headline text-lg">प्रदीप फिल्म्स स्टूडियो</span>
                       </Link>
                   </SheetTitle>
                 </SheetHeader>
@@ -81,8 +80,8 @@ export function Header() {
             </Sheet>
           </div>
           <Link href="/" className="flex items-center space-x-2 md:hidden">
-            <Logo className="h-6 w-6 text-primary" />
-            <span className="font-bold font-headline">प्रदीप फिल्म्स स्टूडियो</span>
+            <Camera className="h-6 w-6 text-primary" />
+            <span className="font-bold font-headline text-lg">प्रदीप फिल्म्स स्टूडियो</span>
           </Link>
           <Button asChild>
             <Link href="/booking">अभी बुक करें</Link>

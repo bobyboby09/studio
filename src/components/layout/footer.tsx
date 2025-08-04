@@ -1,7 +1,6 @@
 
-import { Facebook, Instagram, Twitter, Phone, MessageSquare } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Phone, MessageSquare, Camera } from 'lucide-react';
 import Link from 'next/link';
-import { Logo } from '../icons';
 import { Button } from '../ui/button';
 
 export function Footer() {
@@ -11,7 +10,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
           <div className="mb-6 md:mb-0">
             <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
-              <Logo className="h-6 w-6 text-primary" />
+              <Camera className="h-6 w-6 text-primary" />
               <span className="font-bold font-headline text-lg">प्रदीप फिल्म्स स्टूडियो और मिक्सिंग लैब</span>
             </div>
             <p className="text-muted-foreground">चांदापुर, महाराजगंज, रायबरेली</p>
