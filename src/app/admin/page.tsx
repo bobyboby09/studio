@@ -28,8 +28,6 @@ const serviceSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   price: z.string().min(1, "Price is required"),
-  image: z.string().url("Must be a valid URL").min(1, "Image URL is required"),
-  aiHint: z.string().min(1, "AI Hint is required"),
 });
 
 type ServiceFormData = z.infer<typeof serviceSchema>;
@@ -56,9 +54,6 @@ export default function AdminPage() {
 
   const serviceForm = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: {
-      image: 'https://placehold.co/600x400.png'
-    }
   });
 
   const galleryForm = useForm<GalleryImageFormData>({
@@ -133,8 +128,6 @@ export default function AdminPage() {
     serviceForm.setValue("name", service.name);
     serviceForm.setValue("description", service.description);
     serviceForm.setValue("price", service.price);
-    serviceForm.setValue("image", service.image);
-    serviceForm.setValue("aiHint", service.aiHint);
     setIsServiceDialogOpen(true);
   };
 
@@ -258,16 +251,6 @@ export default function AdminPage() {
                         <Label htmlFor="price">Price</Label>
                         <Input id="price" {...serviceForm.register("price")} />
                          {serviceForm.formState.errors.price && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.price.message}</p>}
-                    </div>
-                    <div>
-                        <Label htmlFor="image">Image URL</Label>
-                        <Input id="image" {...serviceForm.register("image")} />
-                        {serviceForm.formState.errors.image && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.image.message}</p>}
-                    </div>
-                    <div>
-                        <Label htmlFor="aiHint">AI Hint</Label>
-                        <Input id="aiHint" {...serviceForm.register("aiHint")} />
-                        {serviceForm.formState.errors.aiHint && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.aiHint.message}</p>}
                     </div>
                     <DialogFooter>
                       <DialogClose asChild>

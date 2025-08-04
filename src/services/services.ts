@@ -7,8 +7,6 @@ export interface Service {
   name: string;
   description: string;
   price: string;
-  image: string;
-  aiHint: string;
 }
 
 const servicesCollection = collection(db, 'services');

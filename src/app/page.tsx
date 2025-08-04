@@ -72,7 +72,6 @@ export default function Home() {
             {services.map((service) => (
               <Card key={service.id} className="flex flex-col">
                 <CardHeader>
-                  <Image src={service.image} alt={service.name} width={600} height={400} className="rounded-t-lg aspect-[3/2] object-cover" data-ai-hint={service.aiHint} />
                   <CardTitle className="pt-4">{service.name}</CardTitle>
                   <CardDescription>{service.description}</CardDescription>
                 </CardHeader>
