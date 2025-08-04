@@ -50,15 +50,14 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      <section className="h-[60vh] md:h-[80vh] bg-black text-center relative flex items-center justify-center">
-         <Image 
-          src="https://placehold.co/1920x1080.png"
-          alt="Studio Banner"
-          layout="fill"
-          objectFit="cover"
-          className="opacity-30"
-          data-ai-hint="music studio control room"
-        />
+      <section className="h-[60vh] md:h-[80vh] bg-black text-center relative flex items-center justify-center overflow-hidden">
+         <video 
+            src="https://cdn.pixabay.com/video/2024/05/27/211515-949430484_large.mp4"
+            autoPlay
+            loop
+            muted
+            className="absolute top-1/2 left-1/2 w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 opacity-30"
+          />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
         <div className="container mx-auto px-4 z-10 relative">
           <h1 className="font-headline text-4xl md:text-6xl font-bold text-white mb-4 animate-fade-in-up">
