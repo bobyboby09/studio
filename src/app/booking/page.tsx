@@ -23,6 +23,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
+import { addBooking } from "@/services/bookings"
 
 const bookingFormSchema = z.object({
   service: z.string({
@@ -43,13 +44,22 @@ export default function BookingPage() {
         resolver: zodResolver(bookingFormSchema),
     })
 
-    function onSubmit(data: z.infer<typeof bookingFormSchema>) {
-        toast({
-            title: "Booking Submitted!",
-            description: "We have received your request and will contact you shortly to confirm.",
-        })
-        console.log(data)
-        form.reset({ name: '', phone: '', notes: '' });
+    async function onSubmit(data: z.infer<typeof bookingFormSchema>) {
+        try {
+            await addBooking(data);
+            toast({
+                title: "Booking Submitted!",
+                description: "We have received your request and will contact you shortly to confirm.",
+            })
+            form.reset({ name: '', phone: '', notes: '' });
+        } catch (error) {
+            console.error("Error adding booking: ", error);
+            toast({
+                title: "Error",
+                description: "There was a problem submitting your booking. Please try again later.",
+                variant: "destructive"
+            })
+        }
     }
 
   return (

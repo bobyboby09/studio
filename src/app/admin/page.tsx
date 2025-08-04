@@ -1,18 +1,37 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-
-const allBookings = [
-  { id: "BK001", name: "Alice Johnson", service: "Mixing & Mastering", date: "2024-08-15", status: "Confirmed" },
-  { id: "BK002", name: "Bob Williams", service: "Full Day Studio Rental", date: "2024-08-20", status: "Pending" },
-  { id: "BK003", name: "Charlie Brown", service: "Professional Photoshoot", date: "2024-07-22", status: "Completed" },
-  { id: "BK004", name: "Diana Prince", service: "Vocal Production", date: "2024-09-01", status: "Confirmed" },
-];
+import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@/services/bookings";
+import { format } from "date-fns";
 
 export default function AdminPage() {
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onBookingsUpdate((bookings) => {
+      const sortedBookings = bookings.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setAllBookings(sortedBookings);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleUpdateStatus = async (id: string, status: Booking['status']) => {
+    await updateBookingStatus(id, status);
+  };
+
+  const handleDelete = async (id: string) => {
+    if(window.confirm("Are you sure you want to cancel this booking?")) {
+      await deleteBooking(id);
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="mb-12">
@@ -39,7 +58,6 @@ export default function AdminPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Service</TableHead>
                     <TableHead>Date</TableHead>
@@ -50,22 +68,27 @@ export default function AdminPage() {
                 <TableBody>
                   {allBookings.map((booking) => (
                     <TableRow key={booking.id}>
-                      <TableCell>{booking.id}</TableCell>
                       <TableCell>{booking.name}</TableCell>
                       <TableCell>{booking.service}</TableCell>
-                      <TableCell>{booking.date}</TableCell>
+                      <TableCell>{format(new Date(booking.date), "PPP")}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn(
                           booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
                           booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
-                          booking.status === 'Completed' && 'text-green-400 border-green-400'
+                          booking.status === 'Completed' && 'text-green-400 border-green-400',
+                           booking.status === 'Cancelled' && 'text-red-400 border-red-400'
                         )}>
                           {booking.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="space-x-2">
-                        <Button variant="outline" size="sm">Confirm</Button>
-                        <Button variant="destructive" size="sm">Cancel</Button>
+                        {booking.status === 'Pending' && (
+                           <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Confirmed')}>Confirm</Button>
+                        )}
+                         {booking.status === 'Confirmed' && (
+                           <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Completed')}>Complete</Button>
+                        )}
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(booking.id!)}>Cancel</Button>
                       </TableCell>
                     </TableRow>
                   ))}
