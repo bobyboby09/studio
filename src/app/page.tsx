@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Music, Sparkles } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { onServicesUpdate, Service } from '@/services/services';
@@ -15,7 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     const unsubscribe = onServicesUpdate((allServices) => {
-      setServices(allServices.slice(0, 3)); // Show latest 3 services
+      setServices(allServices); 
     });
     return () => unsubscribe();
   }, []);
@@ -44,8 +43,6 @@ export default function Home() {
         </div>
       </section>
 
-      <Separator />
-
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -53,8 +50,8 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-2">हर कलाकार के लिए विशेष समाधान।</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <Card key={service.id} className="flex flex-col">
+            {services.map((service, index) => (
+              <Card key={service.id} className="flex flex-col animate-fade-in-up" style={{ animationDelay: `${index * 150}ms`}}>
                 <CardHeader>
                   <CardTitle className="pt-4">{service.name}</CardTitle>
                   <CardDescription>{service.description}</CardDescription>
