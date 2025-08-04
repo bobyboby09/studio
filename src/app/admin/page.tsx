@@ -20,12 +20,14 @@ import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/
 import { Update, onUpdatesUpdate, addUpdate, deleteUpdate, updateUpdate } from "@/services/updates";
 import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
 import { Partner, onPartnersUpdate, updatePartnerStatus } from "@/services/partners";
+import { PartnerCondition, onPartnerConditionsUpdate, addPartnerCondition, deletePartnerCondition, updatePartnerCondition } from "@/services/partnerConditions";
+
 
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Handshake, Ticket, GalleryHorizontal, Megaphone, Sparkles, SlidersHorizontal, PlusCircle } from "lucide-react";
+import { Handshake, Ticket, GalleryHorizontal, Megaphone, Sparkles, SlidersHorizontal, PlusCircle, FileText } from "lucide-react";
 
 
 const serviceSchema = z.object({
@@ -54,6 +56,11 @@ const galleryImageSchema = z.object({
 });
 type GalleryImageFormData = z.infer<typeof galleryImageSchema>;
 
+const partnerConditionSchema = z.object({
+  text: z.string().min(1, "Condition text is required"),
+});
+type PartnerConditionFormData = z.infer<typeof partnerConditionSchema>;
+
 
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -62,6 +69,7 @@ export default function AdminPage() {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [partnerConditions, setPartnerConditions] = useState<PartnerCondition[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -73,11 +81,15 @@ export default function AdminPage() {
 
   const [isGalleryImageDialogOpen, setIsGalleryImageDialogOpen] = useState(false);
 
+  const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
+  const [editingCondition, setEditingCondition] = useState<PartnerCondition | null>(null);
+
 
   const serviceForm = useForm<ServiceFormData>({ resolver: zodResolver(serviceSchema) });
   const promoCodeForm = useForm<PromoCodeFormData>({ resolver: zodResolver(promoCodeSchema) });
   const updateForm = useForm<UpdateFormData>({ resolver: zodResolver(updateSchema) });
   const galleryImageForm = useForm<GalleryImageFormData>({ resolver: zodResolver(galleryImageSchema) });
+  const conditionForm = useForm<PartnerConditionFormData>({ resolver: zodResolver(partnerConditionSchema) });
 
 
   useEffect(() => {
@@ -98,6 +110,7 @@ export default function AdminPage() {
     const unsubscribeUpdates = onUpdatesUpdate(setUpdates);
     const unsubscribeGalleryImages = onGalleryImagesUpdate(setGalleryImages);
     const unsubscribePartners = onPartnersUpdate(setPartners);
+    const unsubscribePartnerConditions = onPartnerConditionsUpdate(setPartnerConditions);
 
     return () => {
       unsubscribeBookings();
@@ -106,6 +119,7 @@ export default function AdminPage() {
       unsubscribeUpdates();
       unsubscribeGalleryImages();
       unsubscribePartners();
+      unsubscribePartnerConditions();
     };
   }, []);
 
@@ -239,6 +253,36 @@ export default function AdminPage() {
       await updatePartnerStatus(id, status);
   }
 
+  // Partner Condition Handlers
+  const handleConditionFormSubmit: SubmitHandler<PartnerConditionFormData> = async (data) => {
+    if (editingCondition) {
+        await updatePartnerCondition(editingCondition.id!, data);
+    } else {
+        await addPartnerCondition(data);
+    }
+    conditionForm.reset();
+    setEditingCondition(null);
+    setIsConditionDialogOpen(false);
+  };
+
+  const handleEditCondition = (condition: PartnerCondition) => {
+      setEditingCondition(condition);
+      conditionForm.setValue("text", condition.text);
+      setIsConditionDialogOpen(true);
+  };
+
+  const handleDeleteCondition = async (id: string) => {
+      if (window.confirm("Are you sure you want to delete this condition?")) {
+          await deletePartnerCondition(id);
+      }
+  };
+
+  const openNewConditionDialog = () => {
+      conditionForm.reset();
+      setEditingCondition(null);
+      setIsConditionDialogOpen(true);
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -248,13 +292,14 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-6">
           <TabsTrigger value="bookings"><Ticket className="mr-2"/>Bookings</TabsTrigger>
           <TabsTrigger value="services"><SlidersHorizontal className="mr-2"/>Services</TabsTrigger>
           <TabsTrigger value="updates"><Megaphone className="mr-2"/>Updates</TabsTrigger>
           <TabsTrigger value="gallery"><GalleryHorizontal className="mr-2"/>Gallery</TabsTrigger>
           <TabsTrigger value="promos"><Sparkles className="mr-2"/>Promo Codes</TabsTrigger>
           <TabsTrigger value="partners"><Handshake className="mr-2"/>Partners</TabsTrigger>
+          <TabsTrigger value="conditions"><FileText className="mr-2"/>Conditions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bookings">
@@ -619,7 +664,64 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="conditions">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Manage Partner Conditions</CardTitle>
+                        <CardDescription>Set the terms for users to become partners.</CardDescription>
+                    </div>
+                    <Dialog open={isConditionDialogOpen} onOpenChange={setIsConditionDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button onClick={openNewConditionDialog}><PlusCircle className="mr-2"/>Add Condition</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{editingCondition ? "Edit Condition" : "Add New Condition"}</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={conditionForm.handleSubmit(handleConditionFormSubmit)} className="space-y-4">
+                                <div>
+                                    <Label htmlFor="text">Condition Text</Label>
+                                    <Textarea id="text" {...conditionForm.register("text")} />
+                                    {conditionForm.formState.errors.text && <p className="text-red-500 text-xs mt-1">{conditionForm.formState.errors.text.message}</p>}
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button type="button" variant="ghost">Cancel</Button>
+                                    </DialogClose>
+                                    <Button type="submit">{editingCondition ? "Save Changes" : "Add Condition"}</Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Condition</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {partnerConditions.map((condition) => (
+                                <TableRow key={condition.id}>
+                                    <TableCell className="font-medium">{condition.text}</TableCell>
+                                    <TableCell className="space-x-2">
+                                        <Button variant="outline" size="sm" onClick={() => handleEditCondition(condition)}>Edit</Button>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteCondition(condition.id!)}>Delete</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </TabsContent>
+
       </Tabs>
     </div>
   );
 }
+
+    

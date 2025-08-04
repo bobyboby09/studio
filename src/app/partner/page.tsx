@@ -18,7 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { requestPartnerAccess } from "@/services/partners";
-import { Handshake } from "lucide-react";
+import { onPartnerConditionsUpdate, PartnerCondition } from "@/services/partnerConditions";
+import { Handshake, FileText, CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const partnerFormSchema = z.object({
   whatsappNumber: z.string().min(10, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।").regex(/^\d{10,15}$/, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।"),
@@ -26,6 +28,12 @@ const partnerFormSchema = z.object({
 
 export default function PartnerPage() {
   const { toast } = useToast();
+  const [conditions, setConditions] = useState<PartnerCondition[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onPartnerConditionsUpdate(setConditions);
+    return () => unsubscribe();
+  }, []);
 
   const form = useForm<z.infer<typeof partnerFormSchema>>({
     resolver: zodResolver(partnerFormSchema),
@@ -75,6 +83,19 @@ export default function PartnerPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {conditions.length > 0 && (
+            <div className="mb-8 p-4 bg-card-foreground/5 rounded-lg border border-border">
+              <h3 className="font-headline text-xl mb-4 flex items-center"><FileText className="mr-2 h-5 w-5"/>नियम और शर्तें</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                {conditions.map(condition => (
+                  <li key={condition.id} className="flex items-start">
+                     <CheckCircle className="h-4 w-4 mr-3 mt-1 text-primary flex-shrink-0" />
+                    <span>{condition.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
@@ -103,3 +124,5 @@ export default function PartnerPage() {
     </div>
   );
 }
+
+    
