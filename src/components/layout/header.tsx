@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Camera } from "lucide-react";
+import { Menu, Camera, Handshake } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,6 @@ const navLinks = [
   { href: "/services", label: "सेवाएं" },
   { href: "/gallery", label: "गैलरी" },
   { href: "/my-bookings", label: "मेरी बुकिंग" },
-  { href: "/admin", label: "एडमिन" },
 ];
 
 export function Header() {
@@ -48,7 +47,7 @@ export function Header() {
             </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-6 text-sm">
+        <div className="hidden md:flex items-center gap-4 text-sm">
            {navLinks.slice(2, 4).map((link) => (
             <Link
               key={link.href}
@@ -61,6 +60,12 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+            <Button asChild variant="outline" size="sm">
+                <Link href="/partner">
+                    <Handshake className="mr-2 h-4 w-4" />
+                    पार्टनर बनें
+                </Link>
+            </Button>
         </div>
 
         {/* Mobile Navigation Trigger */}
@@ -82,7 +87,7 @@ export function Header() {
                 </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col space-y-4 p-6 pt-4">
-                {[...navLinks, { href: "/offers", label: "ऑफर्स" }].map((link) => (
+                {[...navLinks, { href: "/offers", label: "ऑफर्स" }, { href: "/partner", label: "पार्टनर बनें" }, { href: "/admin", label: "एडमिन" }].map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}

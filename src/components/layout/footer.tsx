@@ -1,5 +1,5 @@
 
-import { Facebook, Instagram, Twitter, Phone, MessageSquare, Camera } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Phone, MessageSquare, Camera, Handshake } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 
@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="border-t border-primary/20 bg-black text-gray-300">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
           
           <div className="mb-6 md:mb-0">
             <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
@@ -23,6 +23,14 @@ export function Footer() {
                 <li><Link href="/services" className="text-muted-foreground hover:text-primary">सेवाएं</Link></li>
                 <li><Link href="/gallery" className="text-muted-foreground hover:text-primary">गैलरी</Link></li>
                 <li><Link href="/booking" className="text-muted-foreground hover:text-primary">बुक करें</Link></li>
+             </ul>
+          </div>
+
+           <div>
+             <h3 className="font-headline text-lg mb-4 text-white">हमारे साथ जुड़ें</h3>
+             <ul className="space-y-2">
+                <li><Link href="/partner" className="text-muted-foreground hover:text-primary">पार्टनर बनें</Link></li>
+                <li><Link href="/admin" className="text-muted-foreground hover:text-primary">एडमिन लॉगिन</Link></li>
              </ul>
           </div>
           

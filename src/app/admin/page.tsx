@@ -19,6 +19,7 @@ import { Service, onServicesUpdate, addService, deleteService, updateService } f
 import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/services/promos";
 import { Update, onUpdatesUpdate, addUpdate, deleteUpdate, updateUpdate } from "@/services/updates";
 import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
+import { Partner, onPartnersUpdate, updatePartnerStatus } from "@/services/partners";
 
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -59,6 +60,7 @@ export default function AdminPage() {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [updates, setUpdates] = useState<Update[]>([]);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -94,6 +96,7 @@ export default function AdminPage() {
     const unsubscribePromoCodes = onPromoCodesUpdate(setPromoCodes);
     const unsubscribeUpdates = onUpdatesUpdate(setUpdates);
     const unsubscribeGalleryImages = onGalleryImagesUpdate(setGalleryImages);
+    const unsubscribePartners = onPartnersUpdate(setPartners);
 
     return () => {
       unsubscribeBookings();
@@ -101,6 +104,7 @@ export default function AdminPage() {
       unsubscribePromoCodes();
       unsubscribeUpdates();
       unsubscribeGalleryImages();
+      unsubscribePartners();
     };
   }, []);
 
@@ -213,7 +217,6 @@ export default function AdminPage() {
 
   // Gallery Image Handlers
   const handleGalleryImageFormSubmit: SubmitHandler<GalleryImageFormData> = async (data) => {
-      // In a real app, you might want to automatically generate aiHint or have a field for it.
       await addGalleryImage({ ...data, aiHint: "studio" });
       galleryImageForm.reset();
       setIsGalleryImageDialogOpen(false);
@@ -230,6 +233,11 @@ export default function AdminPage() {
       setIsGalleryImageDialogOpen(true);
   };
 
+  // Partner handlers
+  const handlePartnerStatusUpdate = async (id: string, status: Partner['status']) => {
+      await updatePartnerStatus(id, status);
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -239,12 +247,13 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="promos">Promo Codes</TabsTrigger>
+          <TabsTrigger value="partners">Partners</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bookings">
@@ -556,6 +565,59 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="partners">
+           <Card>
+            <CardHeader>
+                <CardTitle>Manage Partner Requests</CardTitle>
+                <CardDescription>Approve or reject requests from potential partners.</CardDescription>
+            </CardHeader>
+            <CardContent>
+               <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>WhatsApp Number</TableHead>
+                    <TableHead>Status</TableHead>
+                     <TableHead>Requested At</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {partners.map((partner) => (
+                    <TableRow key={partner.id}>
+                      <TableCell>{partner.whatsappNumber}</TableCell>
+                      <TableCell>
+                         <Badge variant="outline" className={cn(
+                          partner.status === 'Approved' && 'text-green-400 border-green-400',
+                          partner.status === 'Pending' && 'text-yellow-400 border-yellow-400',
+                          partner.status === 'Rejected' && 'text-red-400 border-red-400'
+                        )}>
+                          {partner.status}
+                        </Badge>
+                      </TableCell>
+                       <TableCell>{getFormattedDate(partner.createdAt)}</TableCell>
+                      <TableCell className="space-x-2">
+                        {partner.status === 'Pending' && (
+                            <>
+                                <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
+                                <Button variant="destructive" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Rejected')}>Reject</Button>
+                            </>
+                        )}
+                        {partner.status === 'Approved' && (
+                             <Button variant="destructive" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Rejected')}>Reject</Button>
+                        )}
+                        {partner.status === 'Rejected' && (
+                              <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
       </Tabs>
     </div>
   );
