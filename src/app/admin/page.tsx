@@ -315,6 +315,7 @@ export default function AdminPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Service</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead>Partner</TableHead>
                     <TableHead>Promo</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -326,6 +327,7 @@ export default function AdminPage() {
                       <TableCell>{booking.name}</TableCell>
                       <TableCell>{booking.service}</TableCell>
                       <TableCell>{getFormattedDate(booking.date)}</TableCell>
+                      <TableCell>{booking.partnerWhatsapp || 'N/A'}</TableCell>
                        <TableCell>{booking.promoCode || 'N/A'}</TableCell>
                       <TableCell>
                         <Badge variant={

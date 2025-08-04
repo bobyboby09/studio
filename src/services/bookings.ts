@@ -10,6 +10,8 @@ export interface Booking {
   notes?: string;
   promoCode?: string;
   status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
+  partnerId?: string; // To link booking to a partner
+  partnerWhatsapp?: string; // To easily identify partner
 }
 
 const bookingsCollection = collection(db, 'bookings');

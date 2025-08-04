@@ -19,9 +19,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { requestPartnerAccess, getPartnerByWhatsappNumber, Partner } from "@/services/partners";
 import { onPartnerConditionsUpdate, PartnerCondition } from "@/services/partnerConditions";
-import { Handshake, FileText, CheckCircle, BadgeCheck, Clock, XCircle, Search } from "lucide-react";
+import { Handshake, FileText, CheckCircle, BadgeCheck, Clock, XCircle, Search, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import Link from 'next/link';
 
 const partnerFormSchema = z.object({
   whatsappNumber: z.string().min(10, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।").regex(/^\d{10,15}$/, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।"),
@@ -120,7 +121,7 @@ export default function PartnerPage() {
         case 'Approved':
             icon = <BadgeCheck className="h-10 w-10 text-green-500" />;
             title = "बधाई हो, आप एक पार्टनर हैं!";
-            description = "आपका अनुरोध स्वीकृत हो गया है। हमारी टीम जल्द ही आपसे संपर्क करेगी।";
+            description = "आपका अनुरोध स्वीकृत हो गया है। आप अब अपना डैशबोर्ड देख सकते हैं।";
             badgeVariant = "default";
             break;
         case 'Pending':
@@ -145,6 +146,18 @@ export default function PartnerPage() {
             <h3 className="text-2xl font-headline mb-2">{title}</h3>
             <p className="text-muted-foreground mb-4">{description}</p>
             <Badge variant={badgeVariant} className="text-sm">{partnerStatus.status}</Badge>
+
+            {partnerStatus.status === 'Approved' && (
+              <div className="mt-6">
+                <Button asChild>
+                    <Link href={`/partner/dashboard?id=${partnerStatus.id}`}>
+                        <LogIn className="mr-2"/>
+                        डैशबोर्ड पर जाएं
+                    </Link>
+                </Button>
+              </div>
+            )}
+
             <Button variant="link" onClick={() => {
                 setView("check_status");
                 checkStatusForm.reset();
@@ -249,4 +262,3 @@ export default function PartnerPage() {
     </div>
   );
 }
-

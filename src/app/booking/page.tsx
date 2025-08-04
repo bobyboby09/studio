@@ -25,8 +25,10 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { addBooking } from "@/services/bookings"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams } from 'next/navigation'
 import { onServicesUpdate, Service } from "@/services/services"
+import { getPartnerByWhatsappNumber } from "@/services/partners"
 
 const bookingFormSchema = z.object({
   service: z.string({
@@ -39,16 +41,15 @@ const bookingFormSchema = z.object({
   phone: z.string().min(10, "कृपया एक मान्य फ़ोन नंबर दर्ज करें।"),
   notes: z.string().optional(),
   promoCode: z.string().optional(),
+  partnerId: z.string().optional(),
+  partnerWhatsapp: z.string().optional(),
 })
 
-export default function BookingPage() {
+function BookingFormComponent() {
     const { toast } = useToast()
     const [services, setServices] = useState<Service[]>([]);
-
-    useEffect(() => {
-        const unsubscribe = onServicesUpdate(setServices);
-        return () => unsubscribe();
-    }, []);
+    const searchParams = useSearchParams();
+    const refWhatsapp = searchParams.get('ref');
 
     const form = useForm<z.infer<typeof bookingFormSchema>>({
         resolver: zodResolver(bookingFormSchema),
@@ -57,8 +58,27 @@ export default function BookingPage() {
             phone: "",
             notes: "",
             promoCode: "",
+            partnerId: "",
+            partnerWhatsapp: "",
         },
     })
+
+    useEffect(() => {
+        const unsubscribe = onServicesUpdate(setServices);
+        
+        const setPartnerData = async () => {
+            if (refWhatsapp) {
+                const partner = await getPartnerByWhatsappNumber(refWhatsapp);
+                if (partner && partner.status === 'Approved') {
+                    form.setValue('partnerId', partner.id);
+                    form.setValue('partnerWhatsapp', partner.whatsappNumber);
+                }
+            }
+        }
+        setPartnerData();
+
+        return () => unsubscribe();
+    }, [refWhatsapp, form]);
 
     async function onSubmit(data: z.infer<typeof bookingFormSchema>) {
         try {
@@ -210,6 +230,13 @@ export default function BookingPage() {
                   </FormItem>
                 )}
               />
+              {form.getValues("partnerWhatsapp") && (
+                <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
+                    <p className="text-sm text-primary font-medium">
+                        रेफरल पार्टनर: {form.getValues("partnerWhatsapp")}
+                    </p>
+                </div>
+              )}
               <Button type="submit" className="w-full" size="lg">बुकिंग अनुरोध सबमिट करें</Button>
             </form>
           </Form>
@@ -217,4 +244,12 @@ export default function BookingPage() {
       </Card>
     </div>
   )
+}
+
+export default function BookingPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <BookingFormComponent />
+        </Suspense>
+    )
 }
