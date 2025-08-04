@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { addBooking } from "@/services/bookings"
+import { useEffect, useState } from "react"
+import { onServicesUpdate, Service } from "@/services/services"
 
 const bookingFormSchema = z.object({
   service: z.string({
@@ -40,6 +42,12 @@ const bookingFormSchema = z.object({
 
 export default function BookingPage() {
     const { toast } = useToast()
+    const [services, setServices] = useState<Service[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = onServicesUpdate(setServices);
+        return () => unsubscribe();
+    }, []);
 
     const form = useForm<z.infer<typeof bookingFormSchema>>({
         resolver: zodResolver(bookingFormSchema),
@@ -91,12 +99,9 @@ export default function BookingPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="album-design">Album Design</SelectItem>
-                        <SelectItem value="photoshoot">Professional Photoshoots</SelectItem>
-                        <SelectItem value="mixing-mastering">Mixing & Mastering</SelectItem>
-                        <SelectItem value="video-editing">Video Editing</SelectItem>
-                        <SelectItem value="studio-rental">Full Day Studio Rental</SelectItem>
-                        <SelectItem value="vocal-production">Vocal Production</SelectItem>
+                        {services.map((service) => (
+                           <SelectItem key={service.id} value={service.name}>{service.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

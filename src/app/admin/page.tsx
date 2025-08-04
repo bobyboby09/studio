@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +12,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@/services/bookings";
 import { Service, onServicesUpdate, addService, deleteService, updateService } from "@/services/services";
+import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,18 +34,42 @@ const serviceSchema = z.object({
 
 type ServiceFormData = z.infer<typeof serviceSchema>;
 
+const galleryImageSchema = z.object({
+  src: z.string().url("Must be a valid URL").min(1, "Image URL is required"),
+  alt: z.string().min(1, "Alt text is required"),
+  aiHint: z.string().min(1, "AI Hint is required"),
+});
+
+type GalleryImageFormData = z.infer<typeof galleryImageSchema>;
+
+
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<ServiceFormData>({
+  const [isGalleryDialogOpen, setIsGalleryDialogOpen] = useState(false);
+
+
+  const serviceForm = useForm<ServiceFormData>({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
       image: 'https://placehold.co/600x400.png'
     }
   });
+
+  const galleryForm = useForm<GalleryImageFormData>({
+    resolver: zodResolver(galleryImageSchema),
+     defaultValues: {
+      src: 'https://placehold.co/800x600.png',
+      alt: 'A placeholder image',
+      aiHint: 'placeholder'
+    }
+  });
+
 
   useEffect(() => {
     const unsubscribeBookings = onBookingsUpdate((bookings) => {
@@ -55,10 +82,12 @@ export default function AdminPage() {
     });
 
     const unsubscribeServices = onServicesUpdate(setServices);
+    const unsubscribeGallery = onGalleryImagesUpdate(setGalleryImages);
 
     return () => {
       unsubscribeBookings();
       unsubscribeServices();
+      unsubscribeGallery();
     };
   }, []);
 
@@ -94,18 +123,18 @@ export default function AdminPage() {
     } else {
       await addService(data);
     }
-    reset();
+    serviceForm.reset();
     setEditingService(null);
     setIsServiceDialogOpen(false);
   };
 
   const handleEditService = (service: Service) => {
     setEditingService(service);
-    setValue("name", service.name);
-    setValue("description", service.description);
-    setValue("price", service.price);
-    setValue("image", service.image);
-    setValue("aiHint", service.aiHint);
+    serviceForm.setValue("name", service.name);
+    serviceForm.setValue("description", service.description);
+    serviceForm.setValue("price", service.price);
+    serviceForm.setValue("image", service.image);
+    serviceForm.setValue("aiHint", service.aiHint);
     setIsServiceDialogOpen(true);
   };
 
@@ -116,10 +145,22 @@ export default function AdminPage() {
   };
   
   const openNewServiceDialog = () => {
-    reset();
+    serviceForm.reset();
     setEditingService(null);
     setIsServiceDialogOpen(true);
   };
+
+  const handleGalleryFormSubmit: SubmitHandler<GalleryImageFormData> = async (data) => {
+    await addGalleryImage(data);
+    galleryForm.reset();
+    setIsGalleryDialogOpen(false);
+  };
+
+  const handleDeleteGalleryImage = async (id: string) => {
+     if (window.confirm("Are you sure you want to delete this image?")) {
+      await deleteGalleryImage(id);
+    }
+  }
 
 
   return (
@@ -202,31 +243,31 @@ export default function AdminPage() {
                   <DialogHeader>
                     <DialogTitle>{editingService ? "Edit Service" : "Add New Service"}</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit(handleServiceFormSubmit)} className="space-y-4">
+                  <form onSubmit={serviceForm.handleSubmit(handleServiceFormSubmit)} className="space-y-4">
                     <div>
                         <Label htmlFor="name">Service Name</Label>
-                        <Input id="name" {...register("name")} />
-                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                        <Input id="name" {...serviceForm.register("name")} />
+                        {serviceForm.formState.errors.name && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.name.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="description">Description</Label>
-                        <Textarea id="description" {...register("description")} />
-                        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+                        <Textarea id="description" {...serviceForm.register("description")} />
+                        {serviceForm.formState.errors.description && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.description.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="price">Price</Label>
-                        <Input id="price" {...register("price")} />
-                         {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
+                        <Input id="price" {...serviceForm.register("price")} />
+                         {serviceForm.formState.errors.price && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.price.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="image">Image URL</Label>
-                        <Input id="image" {...register("image")} />
-                        {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>}
+                        <Input id="image" {...serviceForm.register("image")} />
+                        {serviceForm.formState.errors.image && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.image.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="aiHint">AI Hint</Label>
-                        <Input id="aiHint" {...register("aiHint")} />
-                        {errors.aiHint && <p className="text-red-500 text-xs mt-1">{errors.aiHint.message}</p>}
+                        <Input id="aiHint" {...serviceForm.register("aiHint")} />
+                        {serviceForm.formState.errors.aiHint && <p className="text-red-500 text-xs mt-1">{serviceForm.formState.errors.aiHint.message}</p>}
                     </div>
                     <DialogFooter>
                       <DialogClose asChild>
@@ -265,13 +306,65 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="gallery">
            <Card>
-            <CardHeader>
-              <CardTitle>Manage Gallery</CardTitle>
-              <CardDescription>Upload or delete images from the public gallery.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Manage Gallery</CardTitle>
+                    <CardDescription>Add or remove images from the public gallery.</CardDescription>
+                </div>
+                 <Dialog open={isGalleryDialogOpen} onOpenChange={setIsGalleryDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button onClick={() => { galleryForm.reset(); setIsGalleryDialogOpen(true); }}>Add Image</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add New Gallery Image</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={galleryForm.handleSubmit(handleGalleryFormSubmit)} className="space-y-4">
+                            <div>
+                                <Label htmlFor="src">Image URL</Label>
+                                <Input id="src" {...galleryForm.register("src")} />
+                                {galleryForm.formState.errors.src && <p className="text-red-500 text-xs mt-1">{galleryForm.formState.errors.src.message}</p>}
+                            </div>
+                             <div>
+                                <Label htmlFor="alt">Alt Text</Label>
+                                <Input id="alt" {...galleryForm.register("alt")} />
+                                {galleryForm.formState.errors.alt && <p className="text-red-500 text-xs mt-1">{galleryForm.formState.errors.alt.message}</p>}
+                            </div>
+                             <div>
+                                <Label htmlFor="aiHint">AI Hint</Label>
+                                <Input id="aiHint" {...galleryForm.register("aiHint")} />
+                                {galleryForm.formState.errors.aiHint && <p className="text-red-500 text-xs mt-1">{galleryForm.formState.errors.aiHint.message}</p>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button type="submit">Add Image</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </CardHeader>
             <CardContent>
-              <p>Gallery management UI will be here.</p>
-              <Button className="mt-4">Upload Image</Button>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {galleryImages.map(image => (
+                        <div key={image.id} className="relative group">
+                            <Image 
+                                src={image.src} 
+                                alt={image.alt} 
+                                width={400} 
+                                height={300} 
+                                className="rounded-lg object-cover w-full aspect-square"
+                                data-ai-hint={image.aiHint}
+                            />
+                            <div className="absolute top-0 right-0 m-2">
+                                <Button variant="destructive" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteGalleryImage(image.id!)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </CardContent>
           </Card>
         </TabsContent>

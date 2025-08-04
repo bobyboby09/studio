@@ -1,18 +1,18 @@
-import Image from 'next/image';
 
-const galleryImages = [
-  { src: 'https://placehold.co/800x600.png', alt: 'Main mixing console', aiHint: 'mixing desk' },
-  { src: 'https://placehold.co/600x800.png', alt: 'Vocal booth with microphone', aiHint: 'vocal booth' },
-  { src: 'https://placehold.co/800x600.png', alt: 'Studio lounge area', aiHint: 'studio lounge' },
-  { src: 'https://placehold.co/800x600.png', alt: 'Drum kit set up in live room', aiHint: 'drum kit' },
-  { src: 'https://placehold.co/600x800.png', alt: 'Guitar amplifier collection', aiHint: 'guitar amps' },
-  { src: 'https://placehold.co/800x600.png', alt: 'Analog gear rack', aiHint: 'studio rack' },
-  { src: 'https://placehold.co/600x800.png', alt: 'Grand piano in Studio A', aiHint: 'grand piano' },
-  { src: 'https://placehold.co/800x600.png', alt: 'Artist performing in studio', aiHint: 'musician studio' },
-  { src: 'https://placehold.co/800x600.png', alt: 'Detailed shot of audio interface', aiHint: 'audio interface' },
-];
+"use client";
+
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { onGalleryImagesUpdate, GalleryImage } from '@/services/gallery';
 
 export default function GalleryPage() {
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onGalleryImagesUpdate(setGalleryImages);
+    return () => unsubscribe();
+  }, []);
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
@@ -20,9 +20,9 @@ export default function GalleryPage() {
         <p className="text-lg text-muted-foreground mt-2">A glimpse into our creative space.</p>
       </div>
       <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-        {galleryImages.map((image, index) => (
+        {galleryImages.map((image) => (
           <Image
-            key={index}
+            key={image.id}
             src={image.src}
             alt={image.alt}
             width={800}
