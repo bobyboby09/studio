@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@
 import { Service, onServicesUpdate, addService, deleteService, updateService } from "@/services/services";
 import { PromoCode, onPromoCodesUpdate, addPromoCode, deletePromoCode } from "@/services/promos";
 import { Update, onUpdatesUpdate, addUpdate, deleteUpdate, updateUpdate } from "@/services/updates";
+import { GalleryImage, onGalleryImagesUpdate, addGalleryImage, deleteGalleryImage } from "@/services/gallery";
 
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -44,12 +46,19 @@ const updateSchema = z.object({
 });
 type UpdateFormData = z.infer<typeof updateSchema>;
 
+const galleryImageSchema = z.object({
+  src: z.string().url({ message: "Please enter a valid URL." }),
+  alt: z.string().min(1, "Alt text is required."),
+});
+type GalleryImageFormData = z.infer<typeof galleryImageSchema>;
+
 
 export default function AdminPage() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [updates, setUpdates] = useState<Update[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -59,10 +68,13 @@ export default function AdminPage() {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
 
+  const [isGalleryImageDialogOpen, setIsGalleryImageDialogOpen] = useState(false);
+
 
   const serviceForm = useForm<ServiceFormData>({ resolver: zodResolver(serviceSchema) });
   const promoCodeForm = useForm<PromoCodeFormData>({ resolver: zodResolver(promoCodeSchema) });
   const updateForm = useForm<UpdateFormData>({ resolver: zodResolver(updateSchema) });
+  const galleryImageForm = useForm<GalleryImageFormData>({ resolver: zodResolver(galleryImageSchema) });
 
 
   useEffect(() => {
@@ -81,12 +93,14 @@ export default function AdminPage() {
     const unsubscribeServices = onServicesUpdate(setServices);
     const unsubscribePromoCodes = onPromoCodesUpdate(setPromoCodes);
     const unsubscribeUpdates = onUpdatesUpdate(setUpdates);
+    const unsubscribeGalleryImages = onGalleryImagesUpdate(setGalleryImages);
 
     return () => {
       unsubscribeBookings();
       unsubscribeServices();
       unsubscribePromoCodes();
       unsubscribeUpdates();
+      unsubscribeGalleryImages();
     };
   }, []);
 
@@ -197,6 +211,25 @@ export default function AdminPage() {
     setIsUpdateDialogOpen(true);
   };
 
+  // Gallery Image Handlers
+  const handleGalleryImageFormSubmit: SubmitHandler<GalleryImageFormData> = async (data) => {
+      // In a real app, you might want to automatically generate aiHint or have a field for it.
+      await addGalleryImage({ ...data, aiHint: "studio" });
+      galleryImageForm.reset();
+      setIsGalleryImageDialogOpen(false);
+  };
+
+  const handleDeleteGalleryImage = async (id: string) => {
+      if (window.confirm("Are you sure you want to delete this image?")) {
+          await deleteGalleryImage(id);
+      }
+  };
+
+  const openNewGalleryImageDialog = () => {
+      galleryImageForm.reset();
+      setIsGalleryImageDialogOpen(true);
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -206,10 +239,11 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
+          <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="promos">Promo Codes</TabsTrigger>
         </TabsList>
 
@@ -397,6 +431,69 @@ export default function AdminPage() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="gallery">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Manage Gallery</CardTitle>
+                        <CardDescription>Add or remove images from the gallery.</CardDescription>
+                    </div>
+                    <Dialog open={isGalleryImageDialogOpen} onOpenChange={setIsGalleryImageDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button onClick={openNewGalleryImageDialog}>Add New Image</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add New Gallery Image</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={galleryImageForm.handleSubmit(handleGalleryImageFormSubmit)} className="space-y-4">
+                                <div>
+                                    <Label htmlFor="src">Image URL</Label>
+                                    <Input id="src" {...galleryImageForm.register("src")} placeholder="https://placehold.co/800x600.png" />
+                                    {galleryImageForm.formState.errors.src && <p className="text-red-500 text-xs mt-1">{galleryImageForm.formState.errors.src.message}</p>}
+                                </div>
+                                <div>
+                                    <Label htmlFor="alt">Image Description (Alt Text)</Label>
+                                    <Input id="alt" {...galleryImageForm.register("alt")} placeholder="e.g., A photo of the main studio." />
+                                    {galleryImageForm.formState.errors.alt && <p className="text-red-500 text-xs mt-1">{galleryImageForm.formState.errors.alt.message}</p>}
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button type="button" variant="ghost">Cancel</Button>
+                                    </DialogClose>
+                                    <Button type="submit">Add Image</Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Image</TableHead>
+                                <TableHead>Alt Text</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {galleryImages.map((image) => (
+                                <TableRow key={image.id}>
+                                    <TableCell>
+                                        <Image src={image.src} alt={image.alt} width={100} height={75} className="rounded-md object-cover" />
+                                    </TableCell>
+                                    <TableCell>{image.alt}</TableCell>
+                                    <TableCell>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteGalleryImage(image.id!)}>Delete</Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="promos">
