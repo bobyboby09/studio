@@ -63,8 +63,14 @@ export default function PartnerPage() {
           setPartnerStatus(partner);
           setCheckedNumber(data.whatsappNumber);
           if (partner) {
+              if (partner.status === 'Approved') {
+                  localStorage.setItem('partnerId', partner.id!);
+              } else {
+                  localStorage.removeItem('partnerId');
+              }
               setView("show_status");
           } else {
+              localStorage.removeItem('partnerId');
               setView("apply");
               form.setValue("whatsappNumber", data.whatsappNumber);
           }
@@ -161,6 +167,7 @@ export default function PartnerPage() {
             <Button variant="link" onClick={() => {
                 setView("check_status");
                 checkStatusForm.reset();
+                localStorage.removeItem('partnerId');
             }}>
                 दूसरा नंबर जांचें
             </Button>

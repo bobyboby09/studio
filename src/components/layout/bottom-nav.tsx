@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Camera, Ticket, BookUser, Gift, Handshake, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const navLinks = [
   { href: "/", label: "होम", icon: Home },
@@ -12,17 +13,29 @@ const navLinks = [
   { href: "/booking", label: "बुक करें", icon: BookUser },
   { href: "/my-bookings", label: "बुकिंग", icon: Ticket },
   { href: "/partner", label: "पार्टनर", icon: Handshake },
-  { href: "/partner/dashboard", label: "डैशबोर्ड", icon: LayoutDashboard },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [partnerId, setPartnerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // This code runs only on the client-side
+    const storedPartnerId = localStorage.getItem("partnerId");
+    if (storedPartnerId) {
+      setPartnerId(storedPartnerId);
+    }
+  }, [pathname]); // Rerun when path changes to update active state correctly
+
+  const dashboardLink = partnerId ? `/partner/dashboard?id=${partnerId}` : "/partner";
+
+  const allLinks = [...navLinks, { href: dashboardLink, label: "डैशबोर्ड", icon: LayoutDashboard }];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-primary/20 md:hidden">
       <div className="flex justify-around items-center h-16">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href;
+        {allLinks.map((link) => {
+          const isActive = pathname === link.href || (link.href.startsWith('/partner/dashboard') && pathname === '/partner/dashboard');
           const Icon = link.icon;
           return (
             <Link key={link.href} href={link.href} className="flex flex-col items-center justify-center w-full h-full">
