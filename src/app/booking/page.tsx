@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { addBooking } from "@/services/bookings"
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useCallback } from "react"
 import { useSearchParams } from 'next/navigation'
 import { onServicesUpdate, Service } from "@/services/services"
 import { getPartnerByWhatsappNumber } from "@/services/partners"
@@ -49,7 +49,7 @@ function BookingFormComponent() {
     const { toast } = useToast()
     const [services, setServices] = useState<Service[]>([]);
     const searchParams = useSearchParams();
-    const refWhatsapp = searchParams.get('ref');
+    
 
     const form = useForm<z.infer<typeof bookingFormSchema>>({
         resolver: zodResolver(bookingFormSchema),
@@ -62,23 +62,24 @@ function BookingFormComponent() {
             partnerWhatsapp: "",
         },
     })
+    
+    const refWhatsapp = searchParams.get('ref');
+
+    const setPartnerData = useCallback(async (whatsapp: string) => {
+        const partner = await getPartnerByWhatsappNumber(whatsapp);
+        if (partner && partner.status === 'Approved') {
+            form.setValue('partnerId', partner.id);
+            form.setValue('partnerWhatsapp', partner.whatsappNumber);
+        }
+    }, [form]);
 
     useEffect(() => {
         const unsubscribe = onServicesUpdate(setServices);
-        
-        const setPartnerData = async () => {
-            if (refWhatsapp) {
-                const partner = await getPartnerByWhatsappNumber(refWhatsapp);
-                if (partner && partner.status === 'Approved') {
-                    form.setValue('partnerId', partner.id);
-                    form.setValue('partnerWhatsapp', partner.whatsappNumber);
-                }
-            }
+        if (refWhatsapp) {
+            setPartnerData(refWhatsapp);
         }
-        setPartnerData();
-
         return () => unsubscribe();
-    }, [refWhatsapp, form]);
+    }, [refWhatsapp, setPartnerData]);
 
     async function onSubmit(data: z.infer<typeof bookingFormSchema>) {
         try {

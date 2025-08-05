@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,8 @@ export default function PartnersAdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
+  const [isEarningsDialogOpen, setIsEarningsDialogOpen] = useState(false);
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 
   const partnerEarningsForm = useForm<PartnerEarningsFormData>({ resolver: zodResolver(partnerEarningsSchema) });
   const partnerMessageForm = useForm<PartnerMessageFormData>({ resolver: zodResolver(partnerMessageSchema) });
@@ -54,6 +56,16 @@ export default function PartnersAdminPage() {
       unsubscribeBookings();
     };
   }, []);
+
+  const partnerReferrals = useMemo(() => {
+    const referralMap = new Map<string, number>();
+    bookings.forEach(booking => {
+        if (booking.partnerId && booking.status !== 'Pending' && booking.status !== 'Cancelled') {
+            referralMap.set(booking.partnerId, (referralMap.get(booking.partnerId) || 0) + 1);
+        }
+    });
+    return referralMap;
+  }, [bookings]);
 
   const getFormattedDate = (date: any) => {
     if (!date) return "No Date";
@@ -81,6 +93,7 @@ export default function PartnersAdminPage() {
       }
       partnerEarningsForm.reset();
       setEditingPartner(null);
+      setIsEarningsDialogOpen(false);
   };
   
   const handlePartnerMessageFormSubmit: SubmitHandler<PartnerMessageFormData> = async (data) => {
@@ -89,10 +102,7 @@ export default function PartnersAdminPage() {
       }
       partnerMessageForm.reset();
       setEditingPartner(null);
-  }
-
-  const getPartnerReferrals = (partnerId: string) => {
-    return bookings.filter(b => b.partnerId === partnerId).length;
+      setIsMessageDialogOpen(false);
   }
 
   return (
@@ -117,7 +127,7 @@ export default function PartnersAdminPage() {
             {partners.map((partner) => (
             <TableRow key={partner.id}>
                 <TableCell>{partner.whatsappNumber}</TableCell>
-                <TableCell className="font-medium">{getPartnerReferrals(partner.id!)}</TableCell>
+                <TableCell className="font-medium">{partnerReferrals.get(partner.id!) || 0}</TableCell>
                 <TableCell>₹{partner.earnings || 0}</TableCell>
                 <TableCell>
                     <Badge variant={
@@ -146,9 +156,9 @@ export default function PartnersAdminPage() {
                 {partner.status === 'Rejected' && (
                         <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
                 )}
-                <Dialog onOpenChange={(open) => { if(!open) setEditingPartner(null); }}>
+                <Dialog open={isEarningsDialogOpen} onOpenChange={(open) => { if(!open) setEditingPartner(null); setIsEarningsDialogOpen(open); }}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => handleEditPartner(partner)}><Edit className="h-4 w-4"/></Button>
+                        <Button variant="outline" size="icon" onClick={() => { handleEditPartner(partner); setIsEarningsDialogOpen(true); }}><Edit className="h-4 w-4"/></Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -169,9 +179,9 @@ export default function PartnersAdminPage() {
                         </form>
                     </DialogContent>
                 </Dialog>
-                <Dialog onOpenChange={(open) => { if(!open) setEditingPartner(null); }}>
+                <Dialog open={isMessageDialogOpen} onOpenChange={(open) => { if(!open) setEditingPartner(null); setIsMessageDialogOpen(open); }}>
                     <DialogTrigger asChild>
-                         <Button variant="outline" size="icon" onClick={() => handleEditPartner(partner)}><MessageSquare className="h-4 w-4"/></Button>
+                         <Button variant="outline" size="icon" onClick={() => { handleEditPartner(partner); setIsMessageDialogOpen(true); }}><MessageSquare className="h-4 w-4"/></Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>

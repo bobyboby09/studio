@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking, calculateFinalPrice } from "@/services/bookings";
-import { addNotification } from "@/services/notifications";
 
 import { format } from "date-fns";
 

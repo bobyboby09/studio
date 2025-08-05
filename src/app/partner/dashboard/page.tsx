@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DollarSign, Briefcase, Ticket, Gift, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 function PartnerDashboardComponent() {
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const partnerId = searchParams.get('id');
   const [partner, setPartner] = useState<Partner | null>(null);
   const [partnerBookings, setPartnerBookings] = useState<Booking[]>([]);
@@ -210,8 +212,10 @@ function PartnerDashboardComponent() {
                     className="bg-muted text-lg"
                 />
                 <Button className="mt-4" onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/booking?ref=${partner?.whatsappNumber}`);
-                    alert("लिंक कॉपी हो गया!");
+                    if (partner?.whatsappNumber) {
+                      navigator.clipboard.writeText(`${window.location.origin}/booking?ref=${partner.whatsappNumber}`);
+                      toast({ title: "लिंक कॉपी हो गया!" });
+                    }
                 }}>
                     लिंक कॉपी करें
                 </Button>
