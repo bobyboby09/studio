@@ -31,9 +31,12 @@ export default function PartnerDashboardPage() {
 
   useEffect(() => {
     if (!partnerId) return;
-
     const unsubscribePartner = onPartnerUpdate(partnerId, setPartner);
-    
+    return () => unsubscribePartner();
+  }, [partnerId]);
+
+  useEffect(() => {
+    if(!partnerId) return;
     const unsubscribeBookings = onBookingsUpdate((allBookings) => {
        const filteredBookings = allBookings.filter(booking => booking.partnerId === partnerId);
        const sortedBookings = filteredBookings.sort((a, b) => {
@@ -51,7 +54,6 @@ export default function PartnerDashboardPage() {
     });
 
     return () => {
-        unsubscribePartner();
         unsubscribeBookings();
     }
   }, [partnerId]);
