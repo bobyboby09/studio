@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { cn } from "@/lib/utils";
 import { Partner, onPartnersUpdate, updatePartner } from "@/services/partners";
+import { Booking, onBookingsUpdate } from "@/services/bookings";
 
 import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -37,6 +38,7 @@ type PartnerMessageFormData = z.infer<typeof partnerMessageSchema>;
 
 export default function PartnersAdminPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
 
@@ -45,9 +47,11 @@ export default function PartnersAdminPage() {
 
   useEffect(() => {
     const unsubscribePartners = onPartnersUpdate(setPartners);
+    const unsubscribeBookings = onBookingsUpdate(setBookings);
 
     return () => {
       unsubscribePartners();
+      unsubscribeBookings();
     };
   }, []);
 
@@ -87,6 +91,10 @@ export default function PartnersAdminPage() {
       setEditingPartner(null);
   }
 
+  const getPartnerReferrals = (partnerId: string) => {
+    return bookings.filter(b => b.partnerId === partnerId).length;
+  }
+
   return (
     <Card>
     <CardHeader>
@@ -98,7 +106,8 @@ export default function PartnersAdminPage() {
         <TableHeader>
             <TableRow>
             <TableHead>WhatsApp Number</TableHead>
-            <TableHead>Earnings</TableHead>
+            <TableHead>Total Referrals</TableHead>
+            <TableHead>Total Earnings</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Requested At</TableHead>
             <TableHead>Actions</TableHead>
@@ -108,6 +117,7 @@ export default function PartnersAdminPage() {
             {partners.map((partner) => (
             <TableRow key={partner.id}>
                 <TableCell>{partner.whatsappNumber}</TableCell>
+                <TableCell className="font-medium">{getPartnerReferrals(partner.id!)}</TableCell>
                 <TableCell>₹{partner.earnings || 0}</TableCell>
                 <TableCell>
                     <Badge variant={
