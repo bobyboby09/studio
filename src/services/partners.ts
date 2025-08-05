@@ -60,6 +60,17 @@ export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
   });
 };
 
+export const onPartnerUpdate = (id: string, callback: (partner: Partner | null) => void) => {
+    const partnerDocRef = doc(db, 'partners', id);
+    return onSnapshot(partnerDocRef, (doc) => {
+        if (doc.exists()) {
+            callback({ id: doc.id, ...doc.data() } as Partner);
+        } else {
+            callback(null);
+        }
+    });
+};
+
 export const updatePartner = async (id: string, data: Partial<Partner>) => {
   const partnerDoc = doc(db, 'partners', id);
   return await updateDoc(partnerDoc, data);

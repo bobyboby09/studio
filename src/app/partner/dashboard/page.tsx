@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate } from "@/services/bookings";
-import { Partner, getPartnerById } from "@/services/partners";
+import { Partner, onPartnerUpdate } from "@/services/partners";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -32,13 +32,9 @@ export default function PartnerDashboardPage() {
   useEffect(() => {
     if (!partnerId) return;
 
-    const fetchPartner = async () => {
-        const p = await getPartnerById(partnerId);
-        setPartner(p);
-    }
-    fetchPartner();
+    const unsubscribePartner = onPartnerUpdate(partnerId, setPartner);
     
-    const unsubscribe = onBookingsUpdate((allBookings) => {
+    const unsubscribeBookings = onBookingsUpdate((allBookings) => {
        const filteredBookings = allBookings.filter(booking => booking.partnerId === partnerId);
        const sortedBookings = filteredBookings.sort((a, b) => {
         const dateA = a.date as any;
@@ -54,7 +50,10 @@ export default function PartnerDashboardPage() {
       setPartnerBookings(sortedBookings);
     });
 
-    return () => unsubscribe();
+    return () => {
+        unsubscribePartner();
+        unsubscribeBookings();
+    }
   }, [partnerId]);
 
   const getFormattedDate = (date: any) => {
