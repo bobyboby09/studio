@@ -154,7 +154,26 @@ export default function PartnerPage() {
             <Badge variant={badgeVariant} className="text-sm">{partnerStatus.status}</Badge>
 
             {partnerStatus.status === 'Approved' && (
-              <div className="mt-6">
+              <div className="mt-6 flex flex-col gap-4">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg"><Info className="h-5 w-5"/>आपका रेफरल लिंक</CardTitle>
+                        <CardDescription>इस लिंक को अपने ग्राहकों के साथ साझा करें।</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Input 
+                            readOnly 
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/booking?ref=${partnerStatus?.whatsappNumber}`} 
+                            className="bg-muted text-center"
+                        />
+                        <Button className="mt-4" onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/booking?ref=${partnerStatus?.whatsappNumber}`);
+                            toast({ title: "लिंक कॉपी हो गया!" });
+                        }}>
+                            लिंक कॉपी करें
+                        </Button>
+                    </CardContent>
+                </Card>
                 <Button asChild>
                     <Link href={`/partner/dashboard?id=${partnerStatus.id}`}>
                         <LogIn className="mr-2"/>

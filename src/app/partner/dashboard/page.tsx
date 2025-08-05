@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DollarSign, Briefcase, Ticket, Gift, Info } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 function PartnerDashboardComponent() {
   const searchParams = useSearchParams();
@@ -205,7 +206,7 @@ function PartnerDashboardComponent() {
             <CardContent>
                 <Input 
                     readOnly 
-                    value={`${window.location.origin}/booking?ref=${partner?.whatsappNumber}`} 
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/booking?ref=${partner?.whatsappNumber}`} 
                     className="bg-muted text-lg"
                 />
                 <Button className="mt-4" onClick={() => {
