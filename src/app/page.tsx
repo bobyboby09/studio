@@ -20,7 +20,7 @@ const serviceIcons: { [key: string]: React.ElementType } = {
   "Album Design": Disc,
   "Song Recording": Mic2,
   "Drone Shoot": Wind,
-  "default": Music
+  "default": Camera
 };
 
 export default function Home() {
