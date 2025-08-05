@@ -27,16 +27,12 @@ export default function PartnerDashboardPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [partnerBookings, setPartnerBookings] = useState<Booking[]>([]);
   
-  const totalReferrals = partnerBookings.length;
+  const totalReferrals = partnerBookings.filter(b => b.status !== 'Pending' && b.status !== 'Cancelled').length;
 
   useEffect(() => {
     if (!partnerId) return;
-    const unsubscribePartner = onPartnerUpdate(partnerId, setPartner);
-    return () => unsubscribePartner();
-  }, [partnerId]);
 
-  useEffect(() => {
-    if(!partnerId) return;
+    const unsubscribePartner = onPartnerUpdate(partnerId, setPartner);
     const unsubscribeBookings = onBookingsUpdate((allBookings) => {
        const filteredBookings = allBookings.filter(booking => booking.partnerId === partnerId);
        const sortedBookings = filteredBookings.sort((a, b) => {
@@ -54,6 +50,7 @@ export default function PartnerDashboardPage() {
     });
 
     return () => {
+        unsubscribePartner();
         unsubscribeBookings();
     }
   }, [partnerId]);
