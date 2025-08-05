@@ -8,16 +8,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import { cn } from "@/lib/utils";
-import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking } from "@/services/bookings";
+import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking, calculateFinalPrice } from "@/services/bookings";
 
 import { format } from "date-fns";
 
+type BookingWithPrice = Booking & { finalPrice?: number | null };
+
 export default function BookingsAdminPage() {
-  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [allBookings, setAllBookings] = useState<BookingWithPrice[]>([]);
   
   useEffect(() => {
-    const unsubscribeBookings = onBookingsUpdate((bookings) => {
-      const sortedBookings = bookings.sort((a, b) => {
+    const unsubscribeBookings = onBookingsUpdate(async (bookings) => {
+      const bookingsWithPrices = await Promise.all(
+        bookings.map(async (booking) => {
+          const finalPrice = await calculateFinalPrice(booking);
+          return { ...booking, finalPrice };
+        })
+      );
+      const sortedBookings = bookingsWithPrices.sort((a, b) => {
         const dateA = a.date as any;
         const dateB = b.date as any;
         if (dateA?.toDate && dateB?.toDate) {
@@ -78,6 +86,7 @@ export default function BookingsAdminPage() {
                 <TableHead>Date</TableHead>
                 <TableHead>Partner</TableHead>
                 <TableHead>Promo</TableHead>
+                <TableHead>Final Price</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
                 </TableRow>
@@ -90,6 +99,9 @@ export default function BookingsAdminPage() {
                     <TableCell>{getFormattedDate(booking.date)}</TableCell>
                     <TableCell>{booking.partnerWhatsapp || 'N/A'}</TableCell>
                     <TableCell>{booking.promoCode || 'N/A'}</TableCell>
+                    <TableCell>
+                        {booking.finalPrice !== null && booking.finalPrice !== undefined ? `₹${booking.finalPrice.toFixed(2)}` : 'N/A'}
+                    </TableCell>
                     <TableCell>
                     <Badge variant={
                         booking.status === 'Confirmed' ? 'default' :

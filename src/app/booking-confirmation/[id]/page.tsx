@@ -3,14 +3,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Booking, updateBooking } from "@/services/bookings";
-import { Service } from "@/services/services";
-import { PromoCode } from "@/services/promos";
+import { Booking, updateBooking, calculateFinalPrice } from "@/services/bookings";
+import { Service, getServiceByName } from "@/services/services";
+import { getPromoByCode, PromoCode } from "@/services/promos";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { hi } from "date-fns/locale";
@@ -44,49 +44,18 @@ export default function BookingConfirmationPage() {
 
         const bookingData = { id: bookingSnap.id, ...bookingSnap.data() } as Booking;
         setBooking(bookingData);
+        
+        const price = await calculateFinalPrice(bookingData);
+        setFinalPrice(price);
 
-        // Fetch Service details
-        const serviceQuery = await getDoc(doc(db, "services", bookingData.service));
-        if (serviceQuery.exists()) {
-             // In a real app, you would fetch the service by its ID, not name.
-             // For this app structure, we will find it by name for now.
-             const servicesSnap = await getDoc(doc(db, 'services', bookingData.service));
-             // This is inefficient, we should query by name. But for now...
-             const allServicesSnap = await getDoc(collection(db, 'services'));
-             const serviceDoc = allServicesSnap.docs.find(d => d.data().name === bookingData.service);
-             if (serviceDoc) {
-                const serviceData = { id: serviceDoc.id, ...serviceDoc.data() } as Service;
-                setService(serviceData);
-                let currentPrice = parseFloat(serviceData.price.replace(/[^0-9.-]+/g,""));
-
-                 // Fetch Promo Code details if it exists
-                if (bookingData.promoCode) {
-                    const promoQuery = await getDoc(doc(db, "promoCodes", bookingData.promoCode));
-                     const allPromosSnap = await getDocs(collection(db, 'promoCodes'));
-                     const promoDoc = allPromosSnap.docs.find(d => d.data().code === bookingData.promoCode);
-
-                    if (promoDoc) {
-                        const promoData = { id: promoDoc.id, ...promoDoc.data() } as PromoCode;
-                        setPromoCode(promoData);
-                        
-                        const discount = promoData.discount;
-                        if (discount.includes('%')) {
-                            const percentage = parseFloat(discount.replace('%', ''));
-                            currentPrice = currentPrice - (currentPrice * (percentage / 100));
-                        } else if (discount.includes('₹')) {
-                            const amount = parseFloat(discount.replace('₹', ''));
-                            currentPrice = currentPrice - amount;
-                        } else {
-                            const amount = parseFloat(discount);
-                            if(!isNaN(amount)) {
-                                currentPrice = currentPrice - amount;
-                            }
-                        }
-                    }
-                }
-                setFinalPrice(currentPrice);
-             }
+        const serviceData = await getServiceByName(bookingData.service);
+        setService(serviceData);
+        
+        if (bookingData.promoCode) {
+            const promoData = await getPromoByCode(bookingData.promoCode);
+            setPromoCode(promoData);
         }
+
       } catch (error) {
         console.error("Error fetching booking data:", error);
         toast({ title: "त्रुटि", description: "बुकिंग डेटा लाने में विफल।", variant: "destructive" });
@@ -99,13 +68,12 @@ export default function BookingConfirmationPage() {
   }, [bookingId, toast]);
 
   const handleConfirmBooking = async () => {
-    if (!booking) return;
+    if (!booking || finalPrice === null) return;
     setIsLoading(true);
     try {
       await updateBooking(booking.id!, {
         status: "User Confirmed",
-        userConfirmed: true,
-        finalPrice: finalPrice!,
+        finalPrice: finalPrice,
       });
       toast({
         title: "बुकिंग कन्फर्म हो गई!",
@@ -129,14 +97,14 @@ export default function BookingConfirmationPage() {
     return <div className="text-center py-16">बुकिंग नहीं मिली।</div>;
   }
 
-  if (booking.status === "User Confirmed") {
+  if (booking.status !== "Confirmed") {
     return (
         <div className="container mx-auto px-4 py-16">
              <Card className="max-w-2xl mx-auto">
                 <CardHeader className="text-center">
                     <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
                     <CardTitle className="font-headline text-3xl">बुकिंग पहले से ही कन्फर्म है</CardTitle>
-                    <CardDescription>आप इस बुकिंग को पहले ही कन्फर्म कर चुके हैं।</CardDescription>
+                    <CardDescription>यह बुकिंग पहले से ही कन्फर्म या प्रोसेस हो चुकी है।</CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
                     <p>हम स्टूडियो में आपका इंतजार कर रहे हैं।</p>
@@ -159,7 +127,9 @@ export default function BookingConfirmationPage() {
             <h3 className="font-semibold">सेवा विवरण</h3>
             <div className="p-4 border rounded-md bg-muted/50">
                 <p><strong>सेवा:</strong> {booking.service}</p>
-                <p><strong>तारीख:</strong> {format(booking.date.toDate(), "PPPP", { locale: hi })}</p>
+                {booking.date && typeof (booking.date as any).toDate === 'function' &&
+                    <p><strong>तारीख:</strong> {format((booking.date as any).toDate(), "PPPP", { locale: hi })}</p>
+                }
                 {service && <p><strong>मूल्य:</strong> {service.price}</p>}
             </div>
           </div>
@@ -172,10 +142,12 @@ export default function BookingConfirmationPage() {
                         <strong>प्रोमो कोड लागू:</strong> {promoCode.code} ({promoCode.discount} की छूट)
                     </p>
                 )}
-                {finalPrice !== null && (
+                {finalPrice !== null ? (
                      <p className="text-2xl font-bold text-primary">
                         अंतिम मूल्य: ₹{finalPrice.toFixed(2)}
                     </p>
+                ) : (
+                    <p>कीमत की गणना हो रही है...</p>
                 )}
              </div>
           </div>

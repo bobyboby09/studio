@@ -1,7 +1,8 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { createNotification } from './notifications';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { getServiceByName } from './services';
+import { getPromoByCode } from './promos';
 
 export interface Booking {
   id?: string;
@@ -15,7 +16,6 @@ export interface Booking {
   partnerId?: string; // To link booking to a partner
   partnerWhatsapp?: string; // To easily identify partner
   finalPrice?: number;
-  userConfirmed?: boolean;
 }
 
 const bookingsCollection = collection(db, 'bookings');
@@ -24,7 +24,6 @@ export const addBooking = async (booking: Omit<Booking, 'id' | 'status'>) => {
   const newBooking: Omit<Booking, 'id'> = {
     ...booking,
     status: 'Pending',
-    userConfirmed: false,
   };
   return await addDoc(bookingsCollection, newBooking);
 };
@@ -51,19 +50,40 @@ export const updateBookingStatus = async (id: string, status: Booking['status'])
   const bookingDoc = doc(db, 'bookings', id);
   const updateData: Partial<Booking> = { status };
   await updateDoc(bookingDoc, updateData);
-
-  if (status === 'Confirmed') {
-      await createNotification({
-          userId: 'admin', // In a real multi-user app, this would be the user's ID
-          bookingId: id,
-          message: `आपकी बुकिंग की पुष्टि हो गई है! विवरण देखने और अंतिम पुष्टि करने के लिए क्लिक करें।`,
-          isRead: false,
-          createdAt: new Date(),
-      });
-  }
 };
 
 export const deleteBooking = async (id: string) => {
   const bookingDoc = doc(db, 'bookings', id);
   return await deleteDoc(bookingDoc);
+};
+
+
+export const calculateFinalPrice = async (booking: Booking): Promise<number | null> => {
+    try {
+        const service = await getServiceByName(booking.service);
+        if (!service || !service.price) return null;
+
+        let currentPrice = parseFloat(service.price.replace(/[^0-9.-]+/g,""));
+        if (isNaN(currentPrice)) return null;
+
+        if (booking.promoCode) {
+            const promo = await getPromoByCode(booking.promoCode);
+            if (promo && promo.discount) {
+                const discount = promo.discount;
+                if (discount.includes('%')) {
+                    const percentage = parseFloat(discount.replace('%', ''));
+                    currentPrice -= (currentPrice * (percentage / 100));
+                } else {
+                    const amount = parseFloat(discount.replace(/[^0-9.-]+/g,""));
+                    if(!isNaN(amount)) {
+                        currentPrice -= amount;
+                    }
+                }
+            }
+        }
+        return currentPrice;
+    } catch (error) {
+        console.error("Error calculating final price:", error);
+        return null;
+    }
 };

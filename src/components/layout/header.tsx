@@ -4,12 +4,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Camera, Handshake, Bell } from "lucide-react";
+import { Menu, Camera, Handshake } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { onNotificationsUpdate, Notification } from "@/services/notifications";
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { href: "/", label: "होम" },
@@ -20,16 +17,6 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  useEffect(() => {
-    // In a real app, you'd get the current user's ID
-    const userId = "admin";
-    const unsubscribe = onNotificationsUpdate(userId, setNotifications);
-    return () => unsubscribe();
-  }, []);
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-primary/20 bg-black/80 backdrop-blur supports-[backdrop-filter]:bg-black/60">
@@ -79,26 +66,10 @@ export function Header() {
                     पार्टनर बनें
                 </Link>
             </Button>
-            <Button asChild variant="ghost" size="icon" className="relative">
-                <Link href="/notifications">
-                    <Bell />
-                    {unreadCount > 0 && (
-                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-1">{unreadCount}</Badge>
-                    )}
-                </Link>
-            </Button>
         </div>
 
         {/* Mobile Navigation Trigger */}
         <div className="md:hidden flex items-center gap-2">
-            <Button asChild variant="ghost" size="icon" className="relative">
-                <Link href="/notifications">
-                    <Bell />
-                    {unreadCount > 0 && (
-                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-1">{unreadCount}</Badge>
-                    )}
-                </Link>
-            </Button>
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">

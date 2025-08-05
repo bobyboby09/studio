@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, deleteDoc, query, where, limit } from 'firebase/firestore';
 
 export interface PromoCode {
   id?: string;
@@ -24,3 +24,15 @@ export const deletePromoCode = async (id: string) => {
     const promoCodeDoc = doc(db, 'promoCodes', id);
     return await deleteDoc(promoCodeDoc);
 };
+
+export const getPromoByCode = async (code: string): Promise<PromoCode | null> => {
+    const q = query(promoCodesCollection, where("code", "==", code), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        return null;
+    }
+    
+    const promoDoc = querySnapshot.docs[0];
+    return { id: promoDoc.id, ...promoDoc.data() } as PromoCode;
+}

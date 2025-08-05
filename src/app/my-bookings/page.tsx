@@ -17,7 +17,7 @@ import { Booking, onBookingsUpdate } from "@/services/bookings";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Ticket } from "lucide-react";
+import { Ticket, CheckCircle } from "lucide-react";
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -71,7 +71,8 @@ export default function MyBookingsPage() {
                     <TableRow>
                         <TableHead>सेवा</TableHead>
                         <TableHead>तारीख</TableHead>
-                        <TableHead className="text-right">स्थिति</TableHead>
+                        <TableHead>स्थिति</TableHead>
+                        <TableHead className="text-right">कार्रवाई</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -79,7 +80,7 @@ export default function MyBookingsPage() {
                         <TableRow key={booking.id}>
                         <TableCell>{booking.service}</TableCell>
                         <TableCell>{getFormattedDate(booking.date)}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                             <Badge
                             variant="outline"
                             className={cn(
@@ -94,6 +95,16 @@ export default function MyBookingsPage() {
                             {booking.status}
                             </Badge>
                         </TableCell>
+                         <TableCell className="text-right">
+                            {booking.status === 'Confirmed' && (
+                                <Button asChild size="sm">
+                                    <Link href={`/booking-confirmation/${booking.id}`}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        अभी पुष्टि करें
+                                    </Link>
+                                </Button>
+                            )}
+                         </TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

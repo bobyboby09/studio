@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where, limit } from 'firebase/firestore';
 
 export interface Service {
   id?: string;
@@ -35,4 +35,16 @@ export const updateService = async (id: string, service: Partial<Service>) => {
 export const deleteService = async (id: string) => {
     const serviceDoc = doc(db, 'services', id);
     return await deleteDoc(serviceDoc);
+};
+
+export const getServiceByName = async (name: string): Promise<Service | null> => {
+    const q = query(servicesCollection, where("name", "==", name), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        return null;
+    }
+    
+    const serviceDoc = querySnapshot.docs[0];
+    return { id: serviceDoc.id, ...serviceDoc.data() } as Service;
 };
