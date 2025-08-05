@@ -29,8 +29,12 @@ export default function MyBookingsPage() {
       const sortedBookings = allBookings.sort((a, b) => {
         const dateA = a.date as any;
         const dateB = b.date as any;
-        if(dateA?.toDate && dateB?.toDate) {
-          return dateB.toDate().getTime() - a.toDate().getTime();
+        
+        const timeA = dateA?.toDate ? dateA.toDate().getTime() : new Date(dateA).getTime();
+        const timeB = dateB?.toDate ? dateB.toDate().getTime() : new Date(dateB).getTime();
+
+        if (!isNaN(timeA) && !isNaN(timeB)) {
+            return timeB - timeA;
         }
         return 0;
       });
