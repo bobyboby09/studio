@@ -1,5 +1,7 @@
+
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { createNotification } from './notifications';
 
 export interface Booking {
   id?: string;
@@ -9,9 +11,11 @@ export interface Booking {
   phone: string;
   notes?: string;
   promoCode?: string;
-  status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
+  status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled' | 'User Confirmed';
   partnerId?: string; // To link booking to a partner
   partnerWhatsapp?: string; // To easily identify partner
+  finalPrice?: number;
+  userConfirmed?: boolean;
 }
 
 const bookingsCollection = collection(db, 'bookings');
@@ -20,6 +24,7 @@ export const addBooking = async (booking: Omit<Booking, 'id' | 'status'>) => {
   const newBooking: Omit<Booking, 'id'> = {
     ...booking,
     status: 'Pending',
+    userConfirmed: false,
   };
   return await addDoc(bookingsCollection, newBooking);
 };
@@ -36,9 +41,26 @@ export const onBookingsUpdate = (callback: (bookings: Booking[]) => void) => {
   });
 };
 
+export const updateBooking = async (id: string, data: Partial<Booking>) => {
+    const bookingDoc = doc(db, 'bookings', id);
+    return await updateDoc(bookingDoc, data);
+};
+
+
 export const updateBookingStatus = async (id: string, status: Booking['status']) => {
   const bookingDoc = doc(db, 'bookings', id);
-  return await updateDoc(bookingDoc, { status });
+  const updateData: Partial<Booking> = { status };
+  await updateDoc(bookingDoc, updateData);
+
+  if (status === 'Confirmed') {
+      await createNotification({
+          userId: 'admin', // In a real multi-user app, this would be the user's ID
+          bookingId: id,
+          message: `आपकी बुकिंग की पुष्टि हो गई है! विवरण देखने और अंतिम पुष्टि करने के लिए क्लिक करें।`,
+          isRead: false,
+          createdAt: new Date(),
+      });
+  }
 };
 
 export const deleteBooking = async (id: string) => {

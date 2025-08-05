@@ -30,7 +30,7 @@ export default function MyBookingsPage() {
         const dateA = a.date as any;
         const dateB = b.date as any;
         if(dateA?.toDate && dateB?.toDate) {
-          return dateB.toDate().getTime() - dateA.toDate().getTime();
+          return dateB.toDate().getTime() - a.toDate().getTime();
         }
         return 0;
       });
@@ -84,8 +84,9 @@ export default function MyBookingsPage() {
                             variant="outline"
                             className={cn(
                                 'text-sm',
-                                booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
-                                booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
+                                booking.status === 'Confirmed' && 'text-yellow-400 border-yellow-400',
+                                booking.status === 'User Confirmed' && 'text-blue-400 border-blue-400',
+                                booking.status === 'Pending' && 'text-gray-400 border-gray-400',
                                 booking.status === 'Completed' && 'text-green-400 border-green-400',
                                 booking.status === 'Cancelled' && 'text-red-400 border-red-400'
                             )}

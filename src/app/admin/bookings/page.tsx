@@ -94,11 +94,13 @@ export default function BookingsAdminPage() {
                     <Badge variant={
                         booking.status === 'Confirmed' ? 'default' :
                         booking.status === 'Pending' ? 'secondary' :
+                        booking.status === 'User Confirmed' ? 'default' :
                         booking.status === 'Completed' ? 'outline' :
                         'destructive'
                     }
                     className={cn(
-                        booking.status === 'Completed' && 'border-green-500 text-green-500'
+                        booking.status === 'Completed' && 'border-green-500 text-green-500',
+                        booking.status === 'User Confirmed' && 'bg-blue-500'
                     )}
                     >
                         {booking.status}
@@ -109,6 +111,9 @@ export default function BookingsAdminPage() {
                         <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Confirmed')}>Confirm</Button>
                     )}
                     {booking.status === 'Confirmed' && (
+                        <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Completed')}>Complete</Button>
+                    )}
+                     {booking.status === 'User Confirmed' && (
                         <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Completed')}>Complete</Button>
                     )}
                     <Button variant="destructive" size="sm" onClick={() => handleDeleteBooking(booking.id!)}>Cancel</Button>
