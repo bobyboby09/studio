@@ -51,7 +51,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-primary/20 md:hidden">
       <div className="flex justify-around items-center h-16">
         {allLinks.map((link) => {
-          const isActive = pathname === link.href || (link.href.startsWith('/partner/dashboard') && pathname === '/partner/dashboard');
+          const isActive = pathname === link.href || (link.href.startsWith('/partner/dashboard') && pathname.startsWith('/partner/dashboard'));
           const Icon = link.icon;
           return (
             <Link key={link.href} href={link.href} className="flex flex-col items-center justify-center w-full h-full">
