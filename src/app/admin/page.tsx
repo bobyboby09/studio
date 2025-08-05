@@ -16,10 +16,15 @@ export default function AdminDashboardPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribeBookings = onBookingsUpdate(setBookings);
+    const unsubscribeBookings = onBookingsUpdate(allBookings => {
+      setBookings(allBookings);
+      const uniqueUsers = new Set(allBookings.map(b => b.phone));
+      setTotalUsers(uniqueUsers.size);
+    });
     const unsubscribePartners = onPartnersUpdate(setPartners);
     const unsubscribeServices = onServicesUpdate(setServices);
 
@@ -56,7 +61,7 @@ export default function AdminDashboardPage() {
         <h1 className="font-headline text-4xl font-bold">Dashboard</h1>
         <p className="text-lg text-muted-foreground mt-1">Welcome to your Studio Maestro admin panel.</p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Bookings</CardTitle>
@@ -76,6 +81,16 @@ export default function AdminDashboardPage() {
             <div className="text-2xl font-bold">{confirmedBookings}</div>
             <p className="text-xs text-muted-foreground">Upcoming sessions</p>
           </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{totalUsers}</div>
+                <p className="text-xs text-muted-foreground">Unique clients who booked</p>
+            </CardContent>
         </Card>
          <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
