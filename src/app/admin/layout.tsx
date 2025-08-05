@@ -1,7 +1,6 @@
 
 "use client";
 
-import type { Metadata } from 'next';
 import '../globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Sidebar, SidebarProvider, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
@@ -29,55 +28,45 @@ export default function AdminLayout({
   ];
 
   return (
-    <html lang="hi" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
-        <SidebarProvider>
-          <div className="flex min-h-screen">
-            <Sidebar className="bg-card border-r border-border" collapsible="icon">
-              <SidebarContent>
-                <SidebarHeader>
-                  <div className="flex items-center gap-2 p-2">
-                    <Button variant="ghost" size="icon" className="md:hidden" asChild>
-                      <SidebarTrigger>
-                        <Camera />
-                      </SidebarTrigger>
-                    </Button>
-                    <h2 className="font-headline text-lg font-bold">Admin</h2>
-                  </div>
-                </SidebarHeader>
-                <SidebarMenu>
-                  {navItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
-                         <Link href={item.href}>
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarContent>
-            </Sidebar>
-            <main className="flex-1">
-              <div className="p-4 md:p-6">
-                <Button variant="ghost" size="icon" className="md:hidden mb-4" asChild>
+    <SidebarProvider>
+      <div className="flex min-h-screen">
+        <Sidebar className="bg-card border-r border-border" collapsible="icon">
+          <SidebarContent>
+            <SidebarHeader>
+              <div className="flex items-center gap-2 p-2">
+                <Button variant="ghost" size="icon" className="md:hidden" asChild>
                   <SidebarTrigger>
                     <Camera />
                   </SidebarTrigger>
                 </Button>
-                {children}
+                <h2 className="font-headline text-lg font-bold">Admin</h2>
               </div>
-            </main>
+            </SidebarHeader>
+            <SidebarMenu>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
+                      <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+        </Sidebar>
+        <main className="flex-1">
+          <div className="p-4 md:p-6">
+            <Button variant="ghost" size="icon" className="md:hidden mb-4" asChild>
+              <SidebarTrigger>
+                <Camera />
+              </SidebarTrigger>
+            </Button>
+            {children}
           </div>
-        </SidebarProvider>
-        <Toaster />
-      </body>
-    </html>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
