@@ -2,7 +2,6 @@
 "use client";
 
 import '../globals.css';
-import { Toaster } from "@/components/ui/toaster";
 import { Sidebar, SidebarProvider, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Home, Ticket, SlidersHorizontal, Megaphone, GalleryHorizontal, Sparkles, Handshake, FileText, Camera } from 'lucide-react';
