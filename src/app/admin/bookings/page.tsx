@@ -35,6 +35,8 @@ export default function BookingsAdminPage() {
         if (!isNaN(timeA) && !isNaN(timeB)) {
             return timeB - timeA;
         }
+        if (isNaN(timeA)) return 1;
+        if (isNaN(timeB)) return -1;
         return 0;
       });
       setAllBookings(sortedBookings);
@@ -56,23 +58,13 @@ export default function BookingsAdminPage() {
   }
 
   const getFormattedDate = (date: any) => {
-    if (date && typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPP");
+    if (!date) return "No Date";
+    try {
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return format(d, "PPP");
+    } catch (e) {
+        return "Invalid Date";
     }
-    if (date instanceof Date) {
-      return format(date, "PPP");
-    }
-    if (typeof date === 'string') {
-        try {
-            return format(new Date(date), "PPP");
-        } catch (e) { return "Invalid Date"; }
-    }
-    if (typeof date === 'number') {
-        try {
-            return format(new Date(date), "PPP");
-        } catch(e) { return "Invalid Date"; }
-    }
-    return "Invalid Date";
   }
 
   return (
@@ -127,10 +119,7 @@ export default function BookingsAdminPage() {
                     {booking.status === 'Pending' && (
                         <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Confirmed')}>Confirm</Button>
                     )}
-                    {booking.status === 'Confirmed' && (
-                        <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Completed')}>Complete</Button>
-                    )}
-                     {booking.status === 'User Confirmed' && (
+                    {(booking.status === 'Confirmed' || booking.status === 'User Confirmed') && (
                         <Button variant="outline" size="sm" onClick={() => handleUpdateStatus(booking.id!, 'Completed')}>Complete</Button>
                     )}
                     <Button variant="destructive" size="sm" onClick={() => handleDeleteBooking(booking.id!)}>Cancel</Button>

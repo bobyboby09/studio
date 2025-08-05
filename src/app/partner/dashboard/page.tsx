@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from 'next/navigation';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,7 +19,7 @@ import { Partner, onPartnerUpdate } from "@/services/partners";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { DollarSign, Briefcase, User, Ticket } from "lucide-react";
+import { DollarSign, Briefcase, Ticket } from "lucide-react";
 
 export default function PartnerDashboardPage() {
   const searchParams = useSearchParams();
@@ -27,8 +27,6 @@ export default function PartnerDashboardPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [partnerBookings, setPartnerBookings] = useState<Booking[]>([]);
   
-  const totalReferrals = partnerBookings.filter(b => b.status !== 'Pending' && b.status !== 'Cancelled').length;
-
   useEffect(() => {
     if (!partnerId) return;
 
@@ -44,35 +42,31 @@ export default function PartnerDashboardPage() {
         if (!isNaN(timeA) && !isNaN(timeB)) {
             return timeB - timeA;
         }
+        if (isNaN(timeA)) return 1;
+        if (isNaN(timeB)) return -1;
         return 0;
       });
       setPartnerBookings(sortedBookings);
     });
 
     return () => {
-        unsubscribePartner();
-        unsubscribeBookings();
+        if(unsubscribePartner) unsubscribePartner();
+        if(unsubscribeBookings) unsubscribeBookings();
     }
   }, [partnerId]);
+  
+  const totalReferrals = useMemo(() => {
+    return partnerBookings.filter(b => b.status !== 'Pending' && b.status !== 'Cancelled').length;
+  }, [partnerBookings]);
 
   const getFormattedDate = (date: any) => {
-    if (date && typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPP");
+    if (!date) return "No Date";
+    try {
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return format(d, "PPP");
+    } catch (e) {
+        return "अमान्य तारीख";
     }
-    if (date instanceof Date) {
-      return format(date, "PPP");
-    }
-    if (typeof date === 'string') {
-        try {
-            return format(new Date(date), "PPP");
-        } catch (e) { return "अमान्य तारीख"; }
-    }
-    if (typeof date === 'number') {
-        try {
-            return format(new Date(date), "PPP");
-        } catch(e) { return "अमान्य तारीख"; }
-    }
-    return "अमान्य तारीख";
   }
 
 
@@ -182,9 +176,6 @@ export default function PartnerDashboardPage() {
                     <Ticket className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">कोई रेफरल नहीं मिला</h3>
                     <p className="mt-2 text-sm text-muted-foreground">ऐसा लगता है कि आपने अभी तक किसी को रेफर नहीं किया है।</p>
-                    <Button asChild className="mt-6">
-                        <Link href="/booking">अभी बुक करें</Link>
-                    </Button>
                 </div>
             )}
         </CardContent>

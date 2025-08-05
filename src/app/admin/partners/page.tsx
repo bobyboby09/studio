@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -46,13 +46,13 @@ export default function PartnersAdminPage() {
   }, []);
 
   const getFormattedDate = (date: any) => {
-    if (date && typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPP");
+    if (!date) return "No Date";
+    try {
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return format(d, "PPP");
+    } catch (e) {
+        return "Invalid Date";
     }
-    if (date instanceof Date) {
-      return format(date, "PPP");
-    }
-    return "Invalid Date";
   }
 
   const handlePartnerStatusUpdate = async (id: string, status: Partner['status']) => {
@@ -123,32 +123,39 @@ export default function PartnersAdminPage() {
                 {partner.status === 'Rejected' && (
                         <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => handleEditPartnerEarnings(partner)}><Edit className="mr-1 h-3 w-3"/> Earnings</Button>
+                <Dialog open={isPartnerEarningsDialogOpen && editingPartner?.id === partner.id} onOpenChange={(open) => {
+                    if(!open) {
+                        setEditingPartner(null);
+                    }
+                    setIsPartnerEarningsDialogOpen(open);
+                }}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => handleEditPartnerEarnings(partner)}><Edit className="mr-1 h-3 w-3"/> Earnings</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Update Partner Earnings</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={partnerEarningsForm.handleSubmit(handlePartnerEarningsFormSubmit)} className="space-y-4">
+                            <div>
+                                <Label htmlFor="earnings">Earnings</Label>
+                                <Input id="earnings" type="number" {...partnerEarningsForm.register("earnings")} />
+                                {partnerEarningsForm.formState.errors.earnings && <p className="text-red-500 text-xs mt-1">{partnerEarningsForm.formState.errors.earnings.message}</p>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button type="submit">Save Changes</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
                 </TableCell>
             </TableRow>
             ))}
         </TableBody>
         </Table>
-        <Dialog open={isPartnerEarningsDialogOpen} onOpenChange={setIsPartnerEarningsDialogOpen}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Update Partner Earnings</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={partnerEarningsForm.handleSubmit(handlePartnerEarningsFormSubmit)} className="space-y-4">
-                <div>
-                    <Label htmlFor="earnings">Earnings</Label>
-                    <Input id="earnings" type="number" {...partnerEarningsForm.register("earnings")} />
-                    {partnerEarningsForm.formState.errors.earnings && <p className="text-red-500 text-xs mt-1">{partnerEarningsForm.formState.errors.earnings.message}</p>}
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button type="button" variant="ghost">Cancel</Button>
-                    </DialogClose>
-                    <Button type="submit">Save Changes</Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
-        </Dialog>
     </CardContent>
     </Card>
   );

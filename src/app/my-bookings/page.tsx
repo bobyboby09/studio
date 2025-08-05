@@ -23,9 +23,9 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
+    // In a real app, you'd filter this to the logged-in user's bookings.
+    // For now, we'll show all bookings like the admin page.
     const unsubscribe = onBookingsUpdate((allBookings) => {
-      // In a real app, you'd filter this to the logged-in user's bookings.
-      // For now, we'll show all bookings like the admin page.
       const sortedBookings = allBookings.sort((a, b) => {
         const dateA = a.date as any;
         const dateB = b.date as any;
@@ -36,6 +36,8 @@ export default function MyBookingsPage() {
         if (!isNaN(timeA) && !isNaN(timeB)) {
             return timeB - timeA;
         }
+        if (isNaN(timeA)) return 1;
+        if (isNaN(timeB)) return -1;
         return 0;
       });
       setBookings(sortedBookings);
@@ -45,13 +47,13 @@ export default function MyBookingsPage() {
   }, []);
 
   const getFormattedDate = (date: any) => {
-    if (date && typeof date.toDate === 'function') {
-      return format(date.toDate(), "PPP");
+    if (!date) return "No Date";
+    try {
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return format(d, "PPP");
+    } catch (e) {
+        return "अमान्य तारीख";
     }
-    if (date instanceof Date) {
-      return format(date, "PPP");
-    }
-    return "अमान्य तारीख";
   }
 
 
