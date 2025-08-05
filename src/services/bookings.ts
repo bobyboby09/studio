@@ -1,9 +1,10 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 import { getServiceByName } from './services';
 import { getPromoByCode } from './promos';
 import { addNotification } from './notifications';
+import { updatePartnerEarnings } from './partners';
 
 export interface Booking {
   id?: string;
@@ -17,6 +18,7 @@ export interface Booking {
   partnerId?: string; // To link booking to a partner
   partnerWhatsapp?: string; // To easily identify partner
   finalPrice?: number;
+  partnerEarning?: number; // Earning for the partner from this booking
 }
 
 const bookingsCollection = collection(db, 'bookings');
@@ -48,9 +50,21 @@ export const updateBooking = async (id: string, data: Partial<Booking>) => {
 
 
 export const updateBookingStatus = async (id: string, status: Booking['status']) => {
-  const bookingDoc = doc(db, 'bookings', id);
+  const bookingDocRef = doc(db, 'bookings', id);
   const updateData: Partial<Booking> = { status };
-  await updateDoc(bookingDoc, updateData);
+
+  if (status === 'Completed') {
+      const bookingSnap = await getDoc(bookingDocRef);
+      const booking = bookingSnap.data() as Booking;
+      if (booking && booking.partnerId && booking.finalPrice) {
+          // Assuming a 10% commission for the partner
+          const earning = booking.finalPrice * 0.10;
+          updateData.partnerEarning = earning;
+          await updatePartnerEarnings(booking.partnerId, earning);
+      }
+  }
+
+  await updateDoc(bookingDocRef, updateData);
 
   if (status === 'Confirmed') {
       await addNotification({

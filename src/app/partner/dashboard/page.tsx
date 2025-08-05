@@ -64,6 +64,16 @@ export default function PartnerDashboardPage() {
     if (date instanceof Date) {
       return format(date, "PPP");
     }
+    if (typeof date === 'string') {
+        try {
+            return format(new Date(date), "PPP");
+        } catch (e) { return "अमान्य तारीख"; }
+    }
+    if (typeof date === 'number') {
+        try {
+            return format(new Date(date), "PPP");
+        } catch(e) { return "अमान्य तारीख"; }
+    }
     return "अमान्य तारीख";
   }
 
@@ -136,7 +146,8 @@ export default function PartnerDashboardPage() {
                         <TableHead>ग्राहक का नाम</TableHead>
                         <TableHead>सेवा</TableHead>
                         <TableHead>तारीख</TableHead>
-                        <TableHead className="text-right">स्थिति</TableHead>
+                        <TableHead>स्थिति</TableHead>
+                        <TableHead className="text-right">आपकी कमाई</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -145,7 +156,7 @@ export default function PartnerDashboardPage() {
                         <TableCell>{booking.name}</TableCell>
                         <TableCell>{booking.service}</TableCell>
                         <TableCell>{getFormattedDate(booking.date)}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                             <Badge
                             variant="outline"
                             className={cn(
@@ -159,6 +170,11 @@ export default function PartnerDashboardPage() {
                             {booking.status}
                             </Badge>
                         </TableCell>
+                         <TableCell className="text-right font-medium text-primary">
+                            {booking.status === 'Completed' && booking.partnerEarning ?
+                                `₹${booking.partnerEarning.toFixed(2)}` : 'N/A'
+                            }
+                         </TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, orderBy, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, orderBy, getDoc, increment } from 'firebase/firestore';
 
 export interface Partner {
   id?: string;
@@ -63,4 +63,11 @@ export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
 export const updatePartner = async (id: string, data: Partial<Partner>) => {
   const partnerDoc = doc(db, 'partners', id);
   return await updateDoc(partnerDoc, data);
+};
+
+export const updatePartnerEarnings = async (id: string, earning: number) => {
+    const partnerDoc = doc(db, 'partners', id);
+    return await updateDoc(partnerDoc, {
+        earnings: increment(earning)
+    });
 };
