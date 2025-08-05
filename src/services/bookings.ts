@@ -5,6 +5,8 @@ import { getServiceByName } from './services';
 import { getPromoByCode } from './promos';
 import { addNotification } from './notifications';
 import { updatePartnerEarnings } from './partners';
+import { findOrCreateUser } from './users';
+
 
 export interface Booking {
   id?: string;
@@ -28,6 +30,7 @@ export const addBooking = async (booking: Omit<Booking, 'id' | 'status'>) => {
     ...booking,
     status: 'Pending',
   };
+  await findOrCreateUser(booking.phone, booking.name);
   return await addDoc(bookingsCollection, newBooking);
 };
 

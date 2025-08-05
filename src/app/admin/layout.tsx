@@ -4,7 +4,7 @@
 import '../globals.css';
 import { Sidebar, SidebarProvider, SidebarTrigger, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, Ticket, SlidersHorizontal, Megaphone, GalleryHorizontal, Sparkles, Handshake, FileText, Camera } from 'lucide-react';
+import { Home, Ticket, SlidersHorizontal, Megaphone, GalleryHorizontal, Sparkles, Handshake, FileText, Camera, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -18,6 +18,7 @@ export default function AdminLayout({
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: Home },
     { href: '/admin/bookings', label: 'Bookings', icon: Ticket },
+    { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/services', label: 'Services', icon: SlidersHorizontal },
     { href: '/admin/updates', label: 'Updates', icon: Megaphone },
     { href: '/admin/gallery', label: 'Gallery', icon: GalleryHorizontal },
