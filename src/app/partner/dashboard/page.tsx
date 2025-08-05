@@ -54,7 +54,7 @@ function PartnerDashboardComponent() {
 
     return () => {
         if(unsubscribePartner) unsubscribePartner();
-        if(unsubscribeBookings) unsubscribeBookings();
+        unsubscribeBookings();
     }
   }, [partnerId]);
   
@@ -66,6 +66,7 @@ function PartnerDashboardComponent() {
     if (!date) return "No Date";
     try {
         const d = date.toDate ? date.toDate() : new Date(date);
+        if (isNaN(d.getTime())) return "अमान्य तारीख";
         return format(d, "PPP");
     } catch (e) {
         return "अमान्य तारीख";

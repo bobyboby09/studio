@@ -45,13 +45,15 @@ const bookingFormSchema = z.object({
   partnerWhatsapp: z.string().optional(),
 })
 
+type BookingFormData = z.infer<typeof bookingFormSchema>;
+
 function BookingFormComponent() {
     const { toast } = useToast()
     const [services, setServices] = useState<Service[]>([]);
     const searchParams = useSearchParams();
     
 
-    const form = useForm<z.infer<typeof bookingFormSchema>>({
+    const form = useForm<BookingFormData>({
         resolver: zodResolver(bookingFormSchema),
         defaultValues: {
             name: "",
@@ -60,6 +62,7 @@ function BookingFormComponent() {
             promoCode: "",
             partnerId: "",
             partnerWhatsapp: "",
+            date: new Date(),
         },
     })
     
@@ -81,14 +84,23 @@ function BookingFormComponent() {
         return () => unsubscribe();
     }, [refWhatsapp, setPartnerData]);
 
-    async function onSubmit(data: z.infer<typeof bookingFormSchema>) {
+    async function onSubmit(data: BookingFormData) {
         try {
             await addBooking(data);
             toast({
                 title: "बुकिंग सबमिट हो गई!",
                 description: "हमें आपका अनुरोध मिल गया है और पुष्टि के लिए हम जल्द ही आपसे संपर्क करेंगे।",
             })
-            form.reset();
+            form.reset({
+                name: "",
+                phone: "",
+                notes: "",
+                promoCode: "",
+                partnerId: form.getValues('partnerId'), // Keep partner details
+                partnerWhatsapp: form.getValues('partnerWhatsapp'),
+                date: new Date(),
+                service: undefined,
+            });
         } catch (error) {
             console.error("बुकिंग जोड़ने में त्रुटि: ", error);
             toast({
@@ -162,7 +174,7 @@ function BookingFormComponent() {
                           selected={field.value}
                           onSelect={field.onChange}
                           disabled={(date) =>
-                            date < new Date() || date < new Date("1900-01-01")
+                            date < new Date(new Date().setHours(0,0,0,0))
                           }
                           initialFocus
                         />

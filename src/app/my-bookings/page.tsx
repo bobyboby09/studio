@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -18,7 +18,7 @@ import { User, getUser, addUser, updateUser } from "@/services/users";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Ticket, CheckCircle, Search, User as UserIcon } from "lucide-react";
+import { Ticket, CheckCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,20 +47,7 @@ export default function MyBookingsPage() {
   const nameForm = useForm<NameFormData>({ resolver: zodResolver(nameSchema) });
 
 
-  useEffect(() => {
-    const unsubscribe = onBookingsUpdate(setAllBookings);
-    const storedPhone = localStorage.getItem("userPhone");
-    if(storedPhone) {
-      handleSetUser(storedPhone);
-    }
-    return () => unsubscribe();
-  }, []);
-
-  const handlePhoneSubmit: SubmitHandler<PhoneFormData> = async (data) => {
-    await handleSetUser(data.phone);
-  };
-
-  const handleSetUser = async (phone: string) => {
+  const handleSetUser = useCallback(async (phone: string) => {
     setPhone(phone);
     localStorage.setItem("userPhone", phone);
     const existingUser = await getUser(phone);
@@ -72,15 +59,27 @@ export default function MyBookingsPage() {
       setUser(null);
       setShowNameInput(true);
     }
-  }
+  }, [nameForm]);
+
+  useEffect(() => {
+    const unsubscribe = onBookingsUpdate(setAllBookings);
+    const storedPhone = localStorage.getItem("userPhone");
+    if(storedPhone) {
+      handleSetUser(storedPhone);
+    }
+    return () => unsubscribe();
+  }, [handleSetUser]);
+
+  const handlePhoneSubmit: SubmitHandler<PhoneFormData> = async (data) => {
+    await handleSetUser(data.phone);
+  };
+
 
   const handleNameSubmit: SubmitHandler<NameFormData> = async (data) => {
     if(!phone) return;
 
     try {
       if(user) {
-        // This case should ideally not happen if user is null before showing input
-        // but as a fallback
         await updateUser(user.id!, { name: data.name });
       } else {
         await addUser({ name: data.name, phone });
@@ -118,6 +117,7 @@ export default function MyBookingsPage() {
     if (!date) return "No Date";
     try {
         const d = date.toDate ? date.toDate() : new Date(date);
+        if (isNaN(d.getTime())) return "अमान्य तारीख";
         return format(d, "PPP");
     } catch (e) {
         return "अमान्य तारीख";
@@ -154,7 +154,7 @@ export default function MyBookingsPage() {
         <p className="text-lg text-muted-foreground mt-2">
           {user ? `${user.name}, ` : ''}अपने स्टूडियो सत्रों की स्थिति को ट्रैक करें।
         </p>
-         <Button variant="link" onClick={() => { setPhone(null); localStorage.removeItem("userPhone"); }}>
+         <Button variant="link" onClick={() => { setPhone(null); setUser(null); localStorage.removeItem("userPhone"); }}>
             ({phone}) यह आप नहीं हैं?
         </Button>
       </div>
@@ -240,4 +240,3 @@ export default function MyBookingsPage() {
     </div>
   );
 }
-

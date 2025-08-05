@@ -60,6 +60,7 @@ export default function BookingsAdminPage() {
     if (!date) return "No Date";
     try {
         const d = date.toDate ? date.toDate() : new Date(date);
+        if (isNaN(d.getTime())) return "Invalid Date";
         return format(d, "PPP");
     } catch (e) {
         return "Invalid Date";

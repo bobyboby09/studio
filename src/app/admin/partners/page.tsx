@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +71,7 @@ export default function PartnersAdminPage() {
     if (!date) return "No Date";
     try {
         const d = date.toDate ? date.toDate() : new Date(date);
+        if (isNaN(d.getTime())) return "Invalid Date";
         return format(d, "PPP");
     } catch (e) {
         return "Invalid Date";
@@ -81,11 +82,23 @@ export default function PartnersAdminPage() {
       await updatePartner(id, { status });
   }
 
-  const handleEditPartner = (partner: Partner) => {
+  const handleEditPartner = useCallback((partner: Partner) => {
       setEditingPartner(partner);
       partnerEarningsForm.setValue("earnings", partner.earnings || 0);
       partnerMessageForm.setValue("message", partner.message || "");
-  };
+  }, [partnerEarningsForm, partnerMessageForm]);
+
+
+  const openEarningsDialog = useCallback((partner: Partner) => {
+    handleEditPartner(partner);
+    setIsEarningsDialogOpen(true);
+  }, [handleEditPartner]);
+
+  const openMessageDialog = useCallback((partner: Partner) => {
+    handleEditPartner(partner);
+    setIsMessageDialogOpen(true);
+  }, [handleEditPartner]);
+
 
   const handlePartnerEarningsFormSubmit: SubmitHandler<PartnerEarningsFormData> = async (data) => {
       if (editingPartner) {
@@ -156,9 +169,9 @@ export default function PartnersAdminPage() {
                 {partner.status === 'Rejected' && (
                         <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
                 )}
-                <Dialog open={isEarningsDialogOpen} onOpenChange={(open) => { if(!open) setEditingPartner(null); setIsEarningsDialogOpen(open); }}>
+                <Dialog open={isEarningsDialogOpen && editingPartner?.id === partner.id} onOpenChange={(open) => { if(!open) {setEditingPartner(null);} setIsEarningsDialogOpen(open); }}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => { handleEditPartner(partner); setIsEarningsDialogOpen(true); }}><Edit className="h-4 w-4"/></Button>
+                        <Button variant="outline" size="icon" onClick={() => openEarningsDialog(partner)}><Edit className="h-4 w-4"/></Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -179,9 +192,9 @@ export default function PartnersAdminPage() {
                         </form>
                     </DialogContent>
                 </Dialog>
-                <Dialog open={isMessageDialogOpen} onOpenChange={(open) => { if(!open) setEditingPartner(null); setIsMessageDialogOpen(open); }}>
+                <Dialog open={isMessageDialogOpen && editingPartner?.id === partner.id} onOpenChange={(open) => { if(!open) {setEditingPartner(null);} setIsMessageDialogOpen(open); }}>
                     <DialogTrigger asChild>
-                         <Button variant="outline" size="icon" onClick={() => { handleEditPartner(partner); setIsMessageDialogOpen(true); }}><MessageSquare className="h-4 w-4"/></Button>
+                         <Button variant="outline" size="icon" onClick={() => openMessageDialog(partner)}><MessageSquare className="h-4 w-4"/></Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>

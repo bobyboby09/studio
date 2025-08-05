@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, orderBy, getDoc, increment } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, query, where, serverTimestamp, getDoc, increment } from 'firebase/firestore';
 
 export interface Partner {
   id?: string;
@@ -27,6 +27,7 @@ export const requestPartnerAccess = async (whatsappNumber: string) => {
     status: 'Pending',
     createdAt: serverTimestamp(),
     earnings: 0,
+    message: '',
   };
   return await addDoc(partnersCollection, newPartnerRequest);
 };
@@ -54,10 +55,10 @@ export const getPartnerById = async (id: string): Promise<Partner | null> => {
 
 
 export const onPartnersUpdate = (callback: (partners: Partner[]) => void) => {
-  const q = query(partnersCollection, orderBy('createdAt', 'desc'));
+  const q = query(collection(db, 'partners'), where('createdAt', '!=', null));
   return onSnapshot(q, snapshot => {
     const partners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Partner));
-    callback(partners);
+    callback(partners.sort((a,b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
   });
 };
 

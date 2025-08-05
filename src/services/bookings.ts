@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { getServiceByName } from './services';
 import { getPromoByCode } from './promos';
 import { addNotification } from './notifications';
@@ -21,14 +21,16 @@ export interface Booking {
   partnerWhatsapp?: string; // To easily identify partner
   finalPrice?: number;
   partnerEarning?: number; // Earning for the partner from this booking
+  createdAt: any;
 }
 
 const bookingsCollection = collection(db, 'bookings');
 
-export const addBooking = async (booking: Omit<Booking, 'id' | 'status'>) => {
+export const addBooking = async (booking: Omit<Booking, 'id' | 'status' | 'createdAt'>) => {
   const newBooking: Omit<Booking, 'id'> = {
     ...booking,
     status: 'Pending',
+    createdAt: serverTimestamp()
   };
   await findOrCreateUser(booking.phone, booking.name);
   return await addDoc(bookingsCollection, newBooking);
@@ -40,7 +42,7 @@ export const getBookings = async () => {
 };
 
 export const onBookingsUpdate = (callback: (bookings: Booking[]) => void) => {
-  return onSnapshot(bookingsCollection, snapshot => {
+  return onSnapshot(collection(db, 'bookings'), snapshot => {
     const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Booking));
     callback(bookings);
   });
@@ -71,8 +73,6 @@ export const updateBookingStatus = async (id: string, status: Booking['status'])
 
   if (status === 'Confirmed') {
       await addNotification({
-          // In a real app, you'd target a specific userId. 
-          // For now, it's a general notification.
           title: "आपकी बुकिंग कन्फर्म हो गई है!",
           message: `आपकी बुकिंग की पुष्टि हो गई है। कृपया अंतिम पुष्टि के लिए विवरण जांचें।`,
           link: `/booking-confirmation/${id}`,
@@ -101,7 +101,9 @@ export const calculateFinalPrice = async (booking: Booking): Promise<number | nu
                 const discount = promo.discount;
                 if (discount.includes('%')) {
                     const percentage = parseFloat(discount.replace('%', ''));
-                    currentPrice -= (currentPrice * (percentage / 100));
+                    if(!isNaN(percentage)) {
+                       currentPrice -= (currentPrice * (percentage / 100));
+                    }
                 } else {
                     const amount = parseFloat(discount.replace(/[^0-9.-]+/g,""));
                     if(!isNaN(amount)) {
@@ -110,7 +112,7 @@ export const calculateFinalPrice = async (booking: Booking): Promise<number | nu
                 }
             }
         }
-        return currentPrice;
+        return Math.max(0, currentPrice);
     } catch (error) {
         console.error("Error calculating final price:", error);
         return null;
