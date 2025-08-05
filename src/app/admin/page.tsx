@@ -1,14 +1,16 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Booking, onBookingsUpdate } from "@/services/bookings";
 import { Partner, onPartnersUpdate } from "@/services/partners";
 import { Service, onServicesUpdate } from "@/services/services";
-import { Ticket, Users, Handshake, SlidersHorizontal } from "lucide-react";
+import { Ticket, Users, Handshake, SlidersHorizontal, BarChart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 export default function AdminDashboardPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -33,6 +35,20 @@ export default function AdminDashboardPage() {
   const pendingPartners = partners.filter(p => p.status === 'Pending').length;
   const totalServices = services.length;
 
+  const chartData = useMemo(() => {
+    if (bookings.length === 0) return [];
+    
+    const serviceCounts: { [key: string]: number } = {};
+    
+    bookings.forEach(booking => {
+      serviceCounts[booking.service] = (serviceCounts[booking.service] || 0) + 1;
+    });
+
+    return Object.keys(serviceCounts).map(serviceName => ({
+      name: serviceName.length > 15 ? `${serviceName.substring(0, 15)}...` : serviceName,
+      bookings: serviceCounts[serviceName],
+    }));
+  }, [bookings]);
 
   return (
     <div>
@@ -83,17 +99,42 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-       <div className="mt-8">
+
+       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button onClick={() => router.push('/admin/bookings')}>View Bookings</Button>
             <Button onClick={() => router.push('/admin/partners')}>Manage Partners</Button>
             <Button onClick={() => router.push('/admin/updates')}>Create Update</Button>
-             <Button onClick={() => router.push('/admin/gallery')}>Add Gallery Image</Button>
+            <Button onClick={() => router.push('/admin/gallery')}>Add Gallery Image</Button>
           </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <BarChart className="h-5 w-5"/>
+                    Booking Statistics
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.length > 0 ? (
+                <ChartContainer config={{}} className="h-[250px] w-full">
+                    <RechartsBarChart data={chartData} accessibilityLayer>
+                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                        <YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+                        <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                        <Bar dataKey="bookings" fill="hsl(var(--primary))" radius={4} />
+                    </RechartsBarChart>
+                </ChartContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+                  <p>No booking data available yet.</p>
+                </div>
+              )}
+            </CardContent>
         </Card>
       </div>
     </div>
