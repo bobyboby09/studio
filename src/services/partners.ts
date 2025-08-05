@@ -8,6 +8,7 @@ export interface Partner {
   status: 'Pending' | 'Approved' | 'Rejected';
   createdAt: any;
   earnings?: number;
+  message?: string;
 }
 
 const partnersCollection = collection(db, 'partners');

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 import { cn } from "@/lib/utils";
 import { Partner, onPartnersUpdate, updatePartner } from "@/services/partners";
@@ -17,7 +18,7 @@ import { format } from "date-fns";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Edit } from "lucide-react";
+import { Edit, MessageSquare } from "lucide-react";
 
 
 const partnerEarningsSchema = z.object({
@@ -28,14 +29,19 @@ const partnerEarningsSchema = z.object({
 });
 type PartnerEarningsFormData = z.infer<typeof partnerEarningsSchema>;
 
+const partnerMessageSchema = z.object({
+  message: z.string().optional(),
+});
+type PartnerMessageFormData = z.infer<typeof partnerMessageSchema>;
+
 
 export default function PartnersAdminPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
   
-  const [isPartnerEarningsDialogOpen, setIsPartnerEarningsDialogOpen] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
 
   const partnerEarningsForm = useForm<PartnerEarningsFormData>({ resolver: zodResolver(partnerEarningsSchema) });
+  const partnerMessageForm = useForm<PartnerMessageFormData>({ resolver: zodResolver(partnerMessageSchema) });
 
   useEffect(() => {
     const unsubscribePartners = onPartnersUpdate(setPartners);
@@ -59,10 +65,10 @@ export default function PartnersAdminPage() {
       await updatePartner(id, { status });
   }
 
-  const handleEditPartnerEarnings = (partner: Partner) => {
+  const handleEditPartner = (partner: Partner) => {
       setEditingPartner(partner);
       partnerEarningsForm.setValue("earnings", partner.earnings || 0);
-      setIsPartnerEarningsDialogOpen(true);
+      partnerMessageForm.setValue("message", partner.message || "");
   };
 
   const handlePartnerEarningsFormSubmit: SubmitHandler<PartnerEarningsFormData> = async (data) => {
@@ -71,8 +77,15 @@ export default function PartnersAdminPage() {
       }
       partnerEarningsForm.reset();
       setEditingPartner(null);
-      setIsPartnerEarningsDialogOpen(false);
   };
+  
+  const handlePartnerMessageFormSubmit: SubmitHandler<PartnerMessageFormData> = async (data) => {
+      if (editingPartner) {
+          await updatePartner(editingPartner.id!, { message: data.message });
+      }
+      partnerMessageForm.reset();
+      setEditingPartner(null);
+  }
 
   return (
     <Card>
@@ -110,7 +123,7 @@ export default function PartnersAdminPage() {
                 </Badge>
                 </TableCell>
                 <TableCell>{getFormattedDate(partner.createdAt)}</TableCell>
-                <TableCell className="space-x-2">
+                <TableCell className="space-x-2 flex items-center">
                 {partner.status === 'Pending' && (
                     <>
                         <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
@@ -123,14 +136,9 @@ export default function PartnersAdminPage() {
                 {partner.status === 'Rejected' && (
                         <Button variant="outline" size="sm" onClick={() => handlePartnerStatusUpdate(partner.id!, 'Approved')}>Approve</Button>
                 )}
-                <Dialog open={isPartnerEarningsDialogOpen && editingPartner?.id === partner.id} onOpenChange={(open) => {
-                    if(!open) {
-                        setEditingPartner(null);
-                    }
-                    setIsPartnerEarningsDialogOpen(open);
-                }}>
+                <Dialog onOpenChange={(open) => { if(!open) setEditingPartner(null); }}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => handleEditPartnerEarnings(partner)}><Edit className="mr-1 h-3 w-3"/> Earnings</Button>
+                        <Button variant="outline" size="icon" onClick={() => handleEditPartner(partner)}><Edit className="h-4 w-4"/></Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -147,6 +155,29 @@ export default function PartnersAdminPage() {
                                     <Button type="button" variant="ghost">Cancel</Button>
                                 </DialogClose>
                                 <Button type="submit">Save Changes</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+                <Dialog onOpenChange={(open) => { if(!open) setEditingPartner(null); }}>
+                    <DialogTrigger asChild>
+                         <Button variant="outline" size="icon" onClick={() => handleEditPartner(partner)}><MessageSquare className="h-4 w-4"/></Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Send Message to Partner</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={partnerMessageForm.handleSubmit(handlePartnerMessageFormSubmit)} className="space-y-4">
+                            <div>
+                                <Label htmlFor="message">Message / Offer</Label>
+                                <Textarea id="message" {...partnerMessageForm.register("message")} placeholder="e.g., Special offer for your next 5 referrals!"/>
+                                {partnerMessageForm.formState.errors.message && <p className="text-red-500 text-xs mt-1">{partnerMessageForm.formState.errors.message.message}</p>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button type="submit">Send Message</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>

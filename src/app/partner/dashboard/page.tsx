@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,9 +19,9 @@ import { Partner, onPartnerUpdate } from "@/services/partners";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { DollarSign, Briefcase, Ticket } from "lucide-react";
+import { DollarSign, Briefcase, Ticket, Gift, Info } from "lucide-react";
 
-export default function PartnerDashboardPage() {
+function PartnerDashboardComponent() {
   const searchParams = useSearchParams();
   const partnerId = searchParams.get('id');
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -97,7 +97,7 @@ export default function PartnerDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">कुल कमाई</CardTitle>
@@ -123,6 +123,21 @@ export default function PartnerDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      
+      {partner?.message && (
+        <Card className="mb-8 bg-primary/10 border-primary/20">
+          <CardHeader className="flex flex-row items-start gap-4">
+            <Gift className="h-8 w-8 text-primary flex-shrink-0"/>
+            <div>
+              <CardTitle className="text-primary">आपके लिए एक संदेश</CardTitle>
+              <CardDescription className="text-primary/80">एडमिन की ओर से एक विशेष ऑफर या अपडेट।</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg font-medium">{partner.message}</p>
+          </CardContent>
+        </Card>
+      )}
 
 
       <Card>
@@ -153,8 +168,9 @@ export default function PartnerDashboardPage() {
                             variant="outline"
                             className={cn(
                                 'text-sm',
-                                booking.status === 'Confirmed' && 'text-blue-400 border-blue-400',
-                                booking.status === 'Pending' && 'text-yellow-400 border-yellow-400',
+                                booking.status === 'Confirmed' && 'text-yellow-400 border-yellow-400',
+                                booking.status === 'User Confirmed' && 'text-blue-400 border-blue-400',
+                                booking.status === 'Pending' && 'text-gray-400 border-gray-400',
                                 booking.status === 'Completed' && 'text-green-400 border-green-400',
                                 booking.status === 'Cancelled' && 'text-red-400 border-red-400'
                             )}
@@ -175,11 +191,41 @@ export default function PartnerDashboardPage() {
                 <div className="text-center py-12">
                     <Ticket className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">कोई रेफरल नहीं मिला</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">ऐसा लगता है कि आपने अभी तक किसी को रेफर नहीं किया है।</p>
+                    <p className="mt-2 text-sm text-muted-foreground">अपनी रेफरल लिंक साझा करें और कमाई शुरू करें।</p>
                 </div>
             )}
         </CardContent>
       </Card>
+      
+       <Card className="mt-8">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Info className="h-5 w-5"/>आपका रेफरल लिंक</CardTitle>
+                <CardDescription>इस लिंक को अपने ग्राहकों के साथ साझा करें। जब वे इस लिंक का उपयोग करके बुक करेंगे, तो आपको क्रेडिट मिलेगा।</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Input 
+                    readOnly 
+                    value={`${window.location.origin}/booking?ref=${partner?.whatsappNumber}`} 
+                    className="bg-muted text-lg"
+                />
+                <Button className="mt-4" onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/booking?ref=${partner?.whatsappNumber}`);
+                    alert("लिंक कॉपी हो गया!");
+                }}>
+                    लिंक कॉपी करें
+                </Button>
+            </CardContent>
+        </Card>
+
     </div>
   );
+}
+
+
+export default function PartnerDashboardPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <PartnerDashboardComponent />
+        </Suspense>
+    )
 }

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Home, Camera, Ticket, BookUser, Gift, Handshake, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { getPartnerByWhatsappNumber, Partner, onPartnerUpdate } from "@/services/partners";
 
 const baseNavLinks = [
   { href: "/", label: "होम", icon: Home },
