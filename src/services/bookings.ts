@@ -3,6 +3,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { getServiceByName } from './services';
 import { getPromoByCode } from './promos';
+import { addNotification } from './notifications';
 
 export interface Booking {
   id?: string;
@@ -50,6 +51,17 @@ export const updateBookingStatus = async (id: string, status: Booking['status'])
   const bookingDoc = doc(db, 'bookings', id);
   const updateData: Partial<Booking> = { status };
   await updateDoc(bookingDoc, updateData);
+
+  if (status === 'Confirmed') {
+      await addNotification({
+          // In a real app, you'd target a specific userId. 
+          // For now, it's a general notification.
+          title: "आपकी बुकिंग कन्फर्म हो गई है!",
+          message: `आपकी बुकिंग की पुष्टि हो गई है। कृपया अंतिम पुष्टि के लिए विवरण जांचें।`,
+          link: `/booking-confirmation/${id}`,
+          read: false,
+      });
+  }
 };
 
 export const deleteBooking = async (id: string) => {

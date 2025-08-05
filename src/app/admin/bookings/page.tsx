@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { cn } from "@/lib/utils";
 import { Booking, onBookingsUpdate, updateBookingStatus, deleteBooking, calculateFinalPrice } from "@/services/bookings";
+import { addNotification } from "@/services/notifications";
 
 import { format } from "date-fns";
 
@@ -112,7 +113,8 @@ export default function BookingsAdminPage() {
                     }
                     className={cn(
                         booking.status === 'Completed' && 'border-green-500 text-green-500',
-                        booking.status === 'User Confirmed' && 'bg-blue-500'
+                        booking.status === 'User Confirmed' && 'bg-blue-500',
+                         booking.status === 'Confirmed' && 'bg-yellow-500'
                     )}
                     >
                         {booking.status}
